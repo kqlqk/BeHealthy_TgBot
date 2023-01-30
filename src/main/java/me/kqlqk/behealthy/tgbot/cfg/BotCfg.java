@@ -1,9 +1,8 @@
 package me.kqlqk.behealthy.tgbot.cfg;
 
-import me.kqlqk.behealthy.tgbot.service.Command;
+import me.kqlqk.behealthy.tgbot.service.UpdateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
@@ -27,8 +26,9 @@ public class BotCfg extends TelegramLongPollingBot {
     @Value("${bot.token}")
     private String botToken;
 
-    private static final List<MyBotCommand> myBotCommands = new ArrayList<>();
-    private ApplicationContext context;
+    private static final List<BotCommand> botCommands = new ArrayList<>();
+
+    private UpdateService updateService;
 
 
     @PostConstruct
@@ -38,69 +38,46 @@ public class BotCfg extends TelegramLongPollingBot {
             api.registerBot(this);
 
             addCommands();
-            this.execute(new SetMyCommands(new ArrayList<>(myBotCommands), new BotCommandScopeDefault(), null));
-        } catch (TelegramApiException e) {
+            this.execute(new SetMyCommands(botCommands, new BotCommandScopeDefault(), null));
+        }
+        catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }
     }
 
 
     private void addCommands() {
-        myBotCommands.add(new MyBotCommand("/start", "Start the bot", "startCommand"));
+        botCommands.add(new BotCommand("/start", "Start the bot"));
+        botCommands.add(new BotCommand("/login", "Sign in"));
+        botCommands.add(new BotCommand("/registration", "Sign up"));
+        botCommands.add(new BotCommand("/me", "Information about your account"));
     }
 
 
     @Override
     public void onUpdateReceived(Update update) {
-        if (isCommand(update)) {
-            MyBotCommand myBotCommand = getMyBotCommandByCommand(update.getMessage().getText());
-            Command command = context.getBean(myBotCommand.getBeanName(), Command.class);
+        Object answer = updateService.handle(update);
 
-            command.handle(update);
-
-            if (command.getSendMessage() != null) {
-                sendMessage(command.getSendMessage());
-            }
+        if (answer != null) {
+            sendSth(answer);
         }
-
     }
 
 
-    private boolean isCommand(Update update) {
-        if (!update.hasMessage() && !update.getMessage().hasText()) {
-            return false;
-        }
-
-        for (BotCommand command : myBotCommands) {
-            if (command.getCommand().equalsIgnoreCase(update.getMessage().getText())) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public MyBotCommand getMyBotCommandByCommand(String command) {
-        for (MyBotCommand myBotCommand : myBotCommands) {
-            if (myBotCommand.getCommand().equalsIgnoreCase(command)) {
-                return myBotCommand;
-            }
-        }
-
-        return null;
-    }
-
-    private void sendMessage(SendMessage message) {
+    private void sendSth(Object answer) {
         try {
-            execute(message);
-        } catch (TelegramApiException e) {
+            if (answer instanceof SendMessage) {
+                execute((SendMessage) answer);
+            }
+        }
+        catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Autowired
-    public void setContext(ApplicationContext context) {
-        this.context = context;
+    public void setUpdateService(UpdateService updateService) {
+        this.updateService = updateService;
     }
 
     @Override
