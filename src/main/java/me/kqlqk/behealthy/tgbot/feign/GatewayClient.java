@@ -11,6 +11,9 @@ public interface GatewayClient {
     @PostMapping("/api/v1/login")
     TokensDTO logInUser(@RequestBody UserDTO userDTO);
 
+    @PostMapping("/api/v1/registration")
+    TokensDTO createUser(@RequestBody UserDTO userDTO);
+
     @GetMapping("/api/v1/users/{id}")
     UserDTO getUser(@PathVariable long id, @RequestHeader String authorization);
 

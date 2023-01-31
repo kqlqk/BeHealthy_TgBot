@@ -15,8 +15,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import java.util.Objects;
-
 @Service
 public class UpdateServiceImpl implements UpdateService {
     private final TelegramUserService telegramUserService;
@@ -55,8 +53,14 @@ public class UpdateServiceImpl implements UpdateService {
     }
 
     private Object choosingForInactiveUsers(Update update, TelegramUser tgUser) {
-        if (Objects.requireNonNull(tgUser.getCommandSate()) == CommandState.LOGIN_WAIT_FOR_USERNAME_AND_PASSWORD) {
-            return handleAndReturnSendObject(update, tgUser, "loginCommand", LoginCommand.class, null);
+        switch (tgUser.getCommandSate()) {
+            case LOGIN_WAIT_FOR_USERNAME_AND_PASSWORD:
+                return handleAndReturnSendObject(update, tgUser, "loginCommand", LoginCommand.class, null);
+
+            case REGISTRATION_WAIT_FOR_EMAIL:
+            case REGISTRATION_WAIT_FOR_NAME:
+            case REGISTRATION_WAIT_FOR_PASSWORD:
+                return handleAndReturnSendObject(update, tgUser, "registrationCommand", RegistrationCommand.class, null);
         }
 
         switch (update.getMessage().getText()) {
@@ -94,9 +98,16 @@ public class UpdateServiceImpl implements UpdateService {
     }
 
     private Object choosingBetweenCommandState(Update update, TelegramUser tgUser) {
-        if (Objects.requireNonNull(tgUser.getCommandSate()) == CommandState.LOGIN_WAIT_FOR_USERNAME_AND_PASSWORD) {
-            return handleAndReturnSendObject(update, tgUser, "loginCommand", LoginCommand.class, null);
+        switch (tgUser.getCommandSate()) {
+            case LOGIN_WAIT_FOR_USERNAME_AND_PASSWORD:
+                return handleAndReturnSendObject(update, tgUser, "loginCommand", LoginCommand.class, null);
+
+            case REGISTRATION_WAIT_FOR_EMAIL:
+            case REGISTRATION_WAIT_FOR_NAME:
+            case REGISTRATION_WAIT_FOR_PASSWORD:
+                return handleAndReturnSendObject(update, tgUser, "registrationCommand", RegistrationCommand.class, null);
         }
+
         return null;
     }
 
