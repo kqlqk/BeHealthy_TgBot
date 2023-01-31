@@ -1,5 +1,6 @@
 package me.kqlqk.behealthy.tgbot.cfg;
 
+import lombok.extern.slf4j.Slf4j;
 import me.kqlqk.behealthy.tgbot.service.UpdateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@Slf4j
 public class BotCfg extends TelegramLongPollingBot {
     @Value("${bot.name}")
     private String botName;
@@ -41,6 +43,7 @@ public class BotCfg extends TelegramLongPollingBot {
             this.execute(new SetMyCommands(botCommands, new BotCommandScopeDefault(), null));
         }
         catch (TelegramApiException e) {
+            log.error("Something went wrong: ", e);
             throw new RuntimeException(e);
         }
     }
@@ -71,6 +74,7 @@ public class BotCfg extends TelegramLongPollingBot {
             }
         }
         catch (TelegramApiException e) {
+            log.error("Something went wrong: ", e);
             throw new RuntimeException(e);
         }
     }

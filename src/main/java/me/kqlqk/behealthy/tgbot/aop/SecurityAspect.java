@@ -39,16 +39,14 @@ public class SecurityAspect {
                 break;
             }
             else {
-                throw new IllegalArgumentException("class instance Update not found");
+                throw new IllegalArgumentException("Class instance of Update not found");
             }
         }
 
         TelegramUser tgUser = telegramUserService.getByTelegramId(update.getMessage().getFrom().getId());
 
-        if (tgUserAndFieldsNotNull(tgUser)) {
-            // TODO logging
-        }
-        else {
+        if (!tgUserAndFieldsNotNull(tgUser)) {
+            log.warn("User with telegramId = " + tgUser.getTelegramId() + " tried to get access (beforeCheckUserIdAnnotation)");
             throw new NoRightsException("You have no rights to do this");
         }
     }
@@ -62,6 +60,11 @@ public class SecurityAspect {
                 tgUser = (TelegramUser) arg;
                 break;
             }
+        }
+
+        if (tgUser == null) {
+            log.warn("User with telegramId = " + tgUser.getTelegramId() + " tried to get access (setAccessTokenToMethod)");
+            throw new NoRightsException("You have no rights to do this");
         }
 
         int index = 0;
@@ -80,6 +83,8 @@ public class SecurityAspect {
         }
 
         proceedingJoinPoint.proceed(modifiedArgs);
+
+        log.info("User with userId = " + tgUser.getUserId() + " got access (setAccessTokenToMethod)");
     }
 
     private boolean tgUserAndFieldsNotNull(TelegramUser tgUser) {
