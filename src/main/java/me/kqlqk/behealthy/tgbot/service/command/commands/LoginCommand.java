@@ -56,9 +56,7 @@ public class LoginCommand implements Command {
             TokensDTO tokensDTO = gatewayClient.logInUser(userDTO);//TODO handle
 
             tgUser.setRefreshToken(tokensDTO.getRefreshToken());
-            if (tgUser.getUserId() == 0) {
-                tgUser.setUserId(tokensDTO.getUserId());
-            }
+            tgUser.setUserId(tokensDTO.getUserId());
             tgUser.setCommandSate(CommandState.BASIC);
             tgUser.setActive(true);
             telegramUserService.update(tgUser);
