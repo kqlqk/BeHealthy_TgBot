@@ -36,7 +36,11 @@ public class RegistrationCommand implements Command {
         UserDTO userDTO;
 
         while (tgIdUserDTO.size() > 20) {
-            tgIdUserDTO.pollFirstEntry();
+            long tgId = tgIdUserDTO.pollFirstEntry().getKey();
+            TelegramUser telegramUser = telegramUserService.getByTelegramId(tgId);
+            telegramUser.setCommandSate(CommandState.BASIC);
+            telegramUser.setActive(false);
+            telegramUserService.update(telegramUser);
         }
 
         if (tgUser.isActive()) {
@@ -95,7 +99,6 @@ public class RegistrationCommand implements Command {
         }
 
         sendMessage = null;
-
     }
 
     @Override

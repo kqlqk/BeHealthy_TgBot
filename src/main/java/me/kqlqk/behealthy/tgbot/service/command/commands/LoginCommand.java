@@ -28,10 +28,11 @@ public class LoginCommand implements Command {
     @Override
     public void handle(Update update, TelegramUser tgUser) {
         String userMessage = update.getMessage().getText();
+        String chatId = update.getMessage().getChatId().toString();
 
         if (tgUser.getCommandSate() == CommandState.BASIC) {
             String text = "Enter your email and password.\n E.G. user@gmail.com coolPassword123";
-            sendMessage = new SendMessage(update.getMessage().getChatId().toString(), text);
+            sendMessage = new SendMessage(chatId, text);
 
             tgUser.setCommandSate(CommandState.LOGIN_WAIT_FOR_USERNAME_AND_PASSWORD);
             tgUser.setActive(false);
@@ -45,7 +46,7 @@ public class LoginCommand implements Command {
                 credentials = splitCredentials(userMessage);
             }
             catch (BadUserDataException e) {
-                sendMessage = new SendMessage(update.getMessage().getChatId().toString(), e.getMessage());
+                sendMessage = new SendMessage(chatId, e.getMessage());
                 return;
             }
 
@@ -61,7 +62,7 @@ public class LoginCommand implements Command {
             tgUser.setActive(true);
             telegramUserService.update(tgUser);
 
-            sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Successfully signed in");
+            sendMessage = new SendMessage(chatId, "Successfully signed in");
             return;
         }
 

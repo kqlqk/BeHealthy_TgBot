@@ -29,7 +29,11 @@ public class UpdateServiceImpl implements UpdateService {
 
     @Override
     public Object handle(Update update) {
-        long tgId = update.getMessage().getFrom().getId(); //TODO check if message
+        if (!update.hasMessage()) {
+            return null;
+        }
+
+        long tgId = update.getMessage().getFrom().getId();
 
         if (!telegramUserService.existsByTelegramId(tgId)) {
             TelegramUser newTgUser = new TelegramUser();
