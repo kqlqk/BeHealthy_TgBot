@@ -2,6 +2,7 @@ package me.kqlqk.behealthy.tgbot.aop;
 
 import lombok.extern.slf4j.Slf4j;
 import me.kqlqk.behealthy.tgbot.dto.TokensDTO;
+import me.kqlqk.behealthy.tgbot.exception.BadUserDataException;
 import me.kqlqk.behealthy.tgbot.exception.NoRightsException;
 import me.kqlqk.behealthy.tgbot.feign.GatewayClient;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
@@ -63,23 +64,52 @@ public class SecurityAspect {
         }
 
         if (tgUser == null) {
-            log.warn("User with telegramId = " + tgUser.getTelegramId() + " tried to get access (setAccessTokenToMethod)");
-            throw new NoRightsException("You have no rights to do this");
+            log.warn("Telegram user is null");
+            throw new BadUserDataException("Telegram user is null");
         }
 
-        int index = 0;
         Object[] modifiedArgs = proceedingJoinPoint.getArgs();
+
+        int indexForTokens = 0;
+        int indexForSecurityState = 0;
+        boolean hasTokensDTO = false;
+        boolean hasSecurityState = false;
 
         for (Object arg : proceedingJoinPoint.getArgs()) {
             if (arg instanceof TokensDTO) {
-                TokensDTO refreshTokenDTO = new TokensDTO();
-                refreshTokenDTO.setRefreshToken(tgUser.getRefreshToken());
-
-                TokensDTO accessTokenDTO = gatewayClient.getNewAccessToken(refreshTokenDTO); // TODO handle
-
-                modifiedArgs[index] = accessTokenDTO;
+                hasTokensDTO = true;
+                break;
             }
-            index++;
+            indexForTokens++;
+        }
+
+        for (Object arg : proceedingJoinPoint.getArgs()) {
+            if (arg instanceof SecurityState) {
+                hasSecurityState = true;
+                break;
+            }
+            indexForSecurityState++;
+        }
+
+        if (hasTokensDTO) {
+            TokensDTO refreshTokenDTO = new TokensDTO(0, null, tgUser.getRefreshToken());
+
+            TokensDTO accessTokenDTO;
+            try {
+                accessTokenDTO = gatewayClient.getNewAccessToken(refreshTokenDTO);
+                accessTokenDTO.setAccessToken("Bearer " + accessTokenDTO.getAccessToken());
+
+                modifiedArgs[indexForTokens] = accessTokenDTO;
+            }
+            catch (RuntimeException e) {
+                if (hasSecurityState) {
+                    modifiedArgs[indexForSecurityState] = SecurityState.SHOULD_RELOGIN;
+                }
+                else {
+                    log.warn("Method hasn't security state", e);
+                    throw e;
+                }
+            }
         }
 
         proceedingJoinPoint.proceed(modifiedArgs);

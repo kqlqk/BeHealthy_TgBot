@@ -84,9 +84,19 @@ public class RegistrationCommand implements Command {
         else if (tgUser.getCommandSate() == CommandState.REGISTRATION_WAIT_FOR_PASSWORD) {
             userDTO = tgIdUserDTO.get(tgUser.getTelegramId());
             userDTO.setPassword(userMessage);
-            tgIdUserDTO.remove(tgUser.getTelegramId());
 
-            TokensDTO tokensDTO = gatewayClient.createUser(userDTO); //TODO handle
+            TokensDTO tokensDTO;
+            try {
+                tokensDTO = gatewayClient.createUser(userDTO);
+            }
+            catch (RuntimeException e) {
+                sendMessage = new SendMessage(chatId, e.getMessage());
+                tgUser.setCommandSate(CommandState.BASIC);
+                telegramUserService.update(tgUser);
+                return;
+            }
+
+            tgIdUserDTO.remove(tgUser.getTelegramId());
 
             tgUser.setRefreshToken(tokensDTO.getRefreshToken());
             tgUser.setUserId(tokensDTO.getUserId());
