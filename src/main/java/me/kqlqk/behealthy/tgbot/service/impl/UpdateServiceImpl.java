@@ -12,6 +12,7 @@ import me.kqlqk.behealthy.tgbot.service.command.commands.guest.RegistrationComma
 import me.kqlqk.behealthy.tgbot.service.command.commands.guest.StartCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.user.GetConditionCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.user.MeCommand;
+import me.kqlqk.behealthy.tgbot.service.command.commands.user.SetConditionCommand;
 import me.kqlqk.behealthy.tgbot.service.command.enums.CommandState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -100,7 +101,12 @@ public class UpdateServiceImpl implements UpdateService {
                 return handleAndReturnSendObject(update, tgUser, "meCommand", MeCommand.class, new TokensDTO(), SecurityState.OK);
 
             case "/get_condition":
-                return handleAndReturnSendObject(update, tgUser, "getConditionCommand", GetConditionCommand.class, new TokensDTO(), SecurityState.OK);
+                return handleAndReturnSendObject(update, tgUser, "getConditionCommand", GetConditionCommand.class,
+                                                 new TokensDTO(), SecurityState.OK);
+
+            case "/set_condition":
+                return handleAndReturnSendObject(update, tgUser, "setConditionCommand", SetConditionCommand.class,
+                                                 new TokensDTO(), SecurityState.OK);
 
             default:
                 return null;
@@ -116,6 +122,10 @@ public class UpdateServiceImpl implements UpdateService {
             case REGISTRATION_WAIT_FOR_NAME:
             case REGISTRATION_WAIT_FOR_PASSWORD:
                 return handleAndReturnSendObject(update, tgUser, "registrationCommand", RegistrationCommand.class);
+
+            case SET_CONDITION_WAIT_FOR_DATA:
+                return handleAndReturnSendObject(update, tgUser, "setConditionCommand", SetConditionCommand.class,
+                                                 new TokensDTO(), SecurityState.OK);
         }
 
         return null;

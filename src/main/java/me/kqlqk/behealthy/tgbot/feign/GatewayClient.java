@@ -27,4 +27,7 @@ public interface GatewayClient {
 
     @GetMapping("/api/v1/users/{id}/condition")
     UserConditionDTO getUserCondition(@PathVariable long id, @RequestHeader String authorization);
+
+    @PostMapping("/api/v1/users/{id}/condition")
+    void createUserCondition(@PathVariable long id, @RequestBody UserConditionDTO userConditionDTO, @RequestHeader String authorization);
 }
