@@ -6,10 +6,7 @@ import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
 import me.kqlqk.behealthy.tgbot.service.UpdateService;
 import me.kqlqk.behealthy.tgbot.service.command.Command;
-import me.kqlqk.behealthy.tgbot.service.command.commands.LoginCommand;
-import me.kqlqk.behealthy.tgbot.service.command.commands.MeCommand;
-import me.kqlqk.behealthy.tgbot.service.command.commands.RegistrationCommand;
-import me.kqlqk.behealthy.tgbot.service.command.commands.StartCommand;
+import me.kqlqk.behealthy.tgbot.service.command.commands.*;
 import me.kqlqk.behealthy.tgbot.service.command.enums.CommandState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -79,7 +76,7 @@ public class UpdateServiceImpl implements UpdateService {
                 return handleAndReturnSendObject(update, tgUser, "registrationCommand", RegistrationCommand.class);
 
             default:
-                return handleAndReturnSendObject(update, tgUser, "defaultCommand", StartCommand.class);//TODO default answer
+                return handleAndReturnSendObject(update, tgUser, "defaultCommand", DefaultCommand.class);
         }
     }
 
