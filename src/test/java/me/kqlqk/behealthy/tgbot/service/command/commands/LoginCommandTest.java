@@ -50,7 +50,7 @@ public class LoginCommandTest {
         TelegramUser updatedTgUser = telegramUserService.getByTelegramId(1);
 
         assertThat(updatedTgUser.isActive()).isFalse();
-        assertThat(updatedTgUser.getCommandSate()).isEqualTo(CommandState.LOGIN_WAIT_FOR_USERNAME_AND_PASSWORD);
+        assertThat(updatedTgUser.getCommandSate()).isEqualTo(CommandState.LOGIN_WAIT_FOR_DATA);
     }
 
     @Test

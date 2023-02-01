@@ -2,6 +2,7 @@ package me.kqlqk.behealthy.tgbot.service.command.commands.guest;
 
 import me.kqlqk.behealthy.tgbot.dto.TokensDTO;
 import me.kqlqk.behealthy.tgbot.dto.UserDTO;
+import me.kqlqk.behealthy.tgbot.exception.BadUserDataException;
 import me.kqlqk.behealthy.tgbot.feign.GatewayClient;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
@@ -12,13 +13,10 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import java.util.TreeMap;
-
 @Service
 public class RegistrationCommand implements Command {
     private final GatewayClient gatewayClient;
     private final TelegramUserService telegramUserService;
-    private final TreeMap<Long, UserDTO> tgIdUserDTO = new TreeMap<>();
 
     private SendMessage sendMessage;
 
@@ -32,58 +30,34 @@ public class RegistrationCommand implements Command {
     public void handle(Update update, TelegramUser tgUser) {
         String userMessage = update.getMessage().getText();
         String chatId = update.getMessage().getChatId().toString();
-        String text;
-        UserDTO userDTO;
-
-        while (tgIdUserDTO.size() > 20) {
-            long tgId = tgIdUserDTO.pollFirstEntry().getKey();
-            TelegramUser telegramUser = telegramUserService.getByTelegramId(tgId);
-            telegramUser.setCommandSate(CommandState.BASIC);
-            telegramUser.setActive(false);
-            telegramUserService.update(telegramUser);
-        }
 
         if (tgUser.isActive()) {
-            text = "You already signed up";
-
-            sendMessage = new SendMessage(chatId, text);
+            sendMessage = new SendMessage(chatId, "You already signed up");
             return;
         }
 
         if (tgUser.getCommandSate() == CommandState.BASIC) {
-            text = "Enter your email | Only valid email";
+            String text = "Enter your email, name and password." +
+                    "\nUse the following pattern: email name password";
             sendMessage = new SendMessage(chatId, text);
 
-            tgUser.setCommandSate(CommandState.REGISTRATION_WAIT_FOR_EMAIL);
+            tgUser.setCommandSate(CommandState.REGISTRATION_WAIT_FOR_DATA);
             tgUser.setActive(false);
             telegramUserService.update(tgUser);
             return;
         }
-        else if (tgUser.getCommandSate() == CommandState.REGISTRATION_WAIT_FOR_EMAIL) {
-            userDTO = new UserDTO();
-            userDTO.setEmail(userMessage);
-            tgIdUserDTO.put(tgUser.getTelegramId(), userDTO);
+        else if (tgUser.getCommandSate() == CommandState.REGISTRATION_WAIT_FOR_DATA) {
+            String[] data;
 
-            text = "Enter your name | Name can contains only letters";
-            sendMessage = new SendMessage(chatId, text);
-            tgUser.setCommandSate(CommandState.REGISTRATION_WAIT_FOR_NAME);
-            telegramUserService.update(tgUser);
-            return;
-        }
-        else if (tgUser.getCommandSate() == CommandState.REGISTRATION_WAIT_FOR_NAME) {
-            userDTO = tgIdUserDTO.get(tgUser.getTelegramId());
-            userDTO.setName(userMessage);
+            try {
+                data = splitData(userMessage);
+            }
+            catch (BadUserDataException e) {
+                sendMessage = new SendMessage(chatId, e.getMessage());
+                return;
+            }
 
-            text = "Enter your password | " +
-                    "Password should be between 8 and 50 characters, at least: 1 number, 1 uppercase letter, 1 lowercase letter";
-            sendMessage = new SendMessage(chatId, text);
-            tgUser.setCommandSate(CommandState.REGISTRATION_WAIT_FOR_PASSWORD);
-            telegramUserService.update(tgUser);
-            return;
-        }
-        else if (tgUser.getCommandSate() == CommandState.REGISTRATION_WAIT_FOR_PASSWORD) {
-            userDTO = tgIdUserDTO.get(tgUser.getTelegramId());
-            userDTO.setPassword(userMessage);
+            UserDTO userDTO = new UserDTO(data[0], data[1], data[2]);
 
             TokensDTO tokensDTO;
             try {
@@ -91,12 +65,10 @@ public class RegistrationCommand implements Command {
             }
             catch (RuntimeException e) {
                 sendMessage = new SendMessage(chatId, e.getMessage());
-                tgUser.setCommandSate(CommandState.BASIC);
+                tgUser.setCommandSate(CommandState.REGISTRATION_WAIT_FOR_DATA);
                 telegramUserService.update(tgUser);
                 return;
             }
-
-            tgIdUserDTO.remove(tgUser.getTelegramId());
 
             tgUser.setRefreshToken(tokensDTO.getRefreshToken());
             tgUser.setUserId(tokensDTO.getUserId());
@@ -109,6 +81,16 @@ public class RegistrationCommand implements Command {
         }
 
         sendMessage = null;
+    }
+
+    private String[] splitData(String data) {
+        String[] split = data.split(" ");
+
+        if (split.length < 3) {
+            throw new BadUserDataException("Please, use the following pattern: email name password");
+        }
+
+        return split;
     }
 
     @Override

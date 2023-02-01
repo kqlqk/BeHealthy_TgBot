@@ -31,15 +31,15 @@ public class LoginCommand implements Command {
         String chatId = update.getMessage().getChatId().toString();
 
         if (tgUser.getCommandSate() == CommandState.BASIC) {
-            String text = "Enter your email and password.\n E.G. user@gmail.com coolPassword123";
+            String text = "Enter your email and password.\n Use the following pattern: email password";
             sendMessage = new SendMessage(chatId, text);
 
-            tgUser.setCommandSate(CommandState.LOGIN_WAIT_FOR_USERNAME_AND_PASSWORD);
+            tgUser.setCommandSate(CommandState.LOGIN_WAIT_FOR_DATA);
             tgUser.setActive(false);
             telegramUserService.update(tgUser);
             return;
         }
-        else if (tgUser.getCommandSate() == CommandState.LOGIN_WAIT_FOR_USERNAME_AND_PASSWORD) {
+        else if (tgUser.getCommandSate() == CommandState.LOGIN_WAIT_FOR_DATA) {
             String[] credentials;
 
             try {

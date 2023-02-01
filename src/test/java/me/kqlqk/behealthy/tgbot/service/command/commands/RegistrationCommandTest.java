@@ -53,13 +53,16 @@ public class RegistrationCommandTest {
         TelegramUser updatedTgUser = telegramUserService.getByTelegramId(2);
 
         assertThat(updatedTgUser.isActive()).isFalse();
-        assertThat(updatedTgUser.getCommandSate()).isEqualTo(CommandState.REGISTRATION_WAIT_FOR_EMAIL);
+        assertThat(updatedTgUser.getCommandSate()).isEqualTo(CommandState.REGISTRATION_WAIT_FOR_DATA);
     }
 
     @Test
     public void handle_shouldUpdateUser2Times() {
         when(update.getMessage()).thenReturn(message);
         when(message.getChatId()).thenReturn(1L);
+        when(message.getText()).thenReturn("email name pswd");
+        UserDTO userDTO = new UserDTO("email", "name", "pswd");
+        when(gatewayClient.createUser(userDTO)).thenReturn(new TokensDTO(null, "refresh"));
 
         TelegramUser tgUser = new TelegramUser();
         tgUser.setTelegramId(2);
@@ -73,56 +76,6 @@ public class RegistrationCommandTest {
 
 
         TelegramUser updatedTgUser = telegramUserService.getByTelegramId(2);
-
-        assertThat(updatedTgUser.isActive()).isFalse();
-        assertThat(updatedTgUser.getCommandSate()).isEqualTo(CommandState.REGISTRATION_WAIT_FOR_NAME);
-    }
-
-    @Test
-    public void handle_shouldUpdateUser3Times() {
-        when(update.getMessage()).thenReturn(message);
-        when(message.getChatId()).thenReturn(1L);
-
-        TelegramUser tgUser = new TelegramUser();
-        tgUser.setTelegramId(2);
-        tgUser.setCommandSate(CommandState.BASIC);
-        telegramUserService.save(tgUser);
-
-        registrationCommand.handle(update, tgUser);
-        registrationCommand.handle(update, tgUser);
-
-
-        registrationCommand.handle(update, tgUser);
-
-
-        TelegramUser updatedTgUser = telegramUserService.getByTelegramId(2);
-
-        assertThat(updatedTgUser.isActive()).isFalse();
-        assertThat(updatedTgUser.getCommandSate()).isEqualTo(CommandState.REGISTRATION_WAIT_FOR_PASSWORD);
-    }
-
-    @Test
-    public void handle_shouldUpdateUser4Times() {
-        when(update.getMessage()).thenReturn(message);
-        when(message.getChatId()).thenReturn(1L);
-
-        UserDTO userDTO = new UserDTO();
-        when(gatewayClient.createUser(userDTO)).thenReturn(new TokensDTO(2, "access", "refresh"));
-
-        TelegramUser tgUser = new TelegramUser();
-        tgUser.setTelegramId(2);
-        tgUser.setCommandSate(CommandState.BASIC);
-        telegramUserService.save(tgUser);
-
-        registrationCommand.handle(update, telegramUserService.getByTelegramId(2));
-        registrationCommand.handle(update, telegramUserService.getByTelegramId(2));
-        registrationCommand.handle(update, telegramUserService.getByTelegramId(2));
-
-
-        registrationCommand.handle(update, tgUser);
-
-
-        TelegramUser updatedTgUser = telegramUserService.getByTelegramId(1);
 
         assertThat(updatedTgUser.isActive()).isTrue();
         assertThat(updatedTgUser.getCommandSate()).isEqualTo(CommandState.BASIC);

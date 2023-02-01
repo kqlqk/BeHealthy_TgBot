@@ -62,12 +62,10 @@ public class UpdateServiceImpl implements UpdateService {
 
     private Object choosingForInactiveUsers(Update update, TelegramUser tgUser) {
         switch (tgUser.getCommandSate()) {
-            case LOGIN_WAIT_FOR_USERNAME_AND_PASSWORD:
+            case LOGIN_WAIT_FOR_DATA:
                 return handleAndReturnSendObject(update, tgUser, "loginCommand", LoginCommand.class);
 
-            case REGISTRATION_WAIT_FOR_EMAIL:
-            case REGISTRATION_WAIT_FOR_NAME:
-            case REGISTRATION_WAIT_FOR_PASSWORD:
+            case REGISTRATION_WAIT_FOR_DATA:
                 return handleAndReturnSendObject(update, tgUser, "registrationCommand", RegistrationCommand.class);
         }
 
@@ -115,12 +113,10 @@ public class UpdateServiceImpl implements UpdateService {
 
     private Object choosingBetweenCommandState(Update update, TelegramUser tgUser) {
         switch (tgUser.getCommandSate()) {
-            case LOGIN_WAIT_FOR_USERNAME_AND_PASSWORD:
+            case LOGIN_WAIT_FOR_DATA:
                 return handleAndReturnSendObject(update, tgUser, "loginCommand", LoginCommand.class);
 
-            case REGISTRATION_WAIT_FOR_EMAIL:
-            case REGISTRATION_WAIT_FOR_NAME:
-            case REGISTRATION_WAIT_FOR_PASSWORD:
+            case REGISTRATION_WAIT_FOR_DATA:
                 return handleAndReturnSendObject(update, tgUser, "registrationCommand", RegistrationCommand.class);
 
             case SET_CONDITION_WAIT_FOR_DATA:
