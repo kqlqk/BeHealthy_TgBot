@@ -40,7 +40,7 @@ public class TelegramUserServiceImpl implements TelegramUserService {
     @Override
     public void update(@NonNull TelegramUser telegramUser) {
         if (!existsByTelegramId(telegramUser.getTelegramId())) {
-            throw new TelegramUserNotFoundException("TelegramUser with telegramId = " + telegramUser.getTelegramId() + " already exists");
+            throw new TelegramUserNotFoundException("TelegramUser with telegramId = " + telegramUser.getTelegramId() + " not found");
         }
 
         telegramUserRepository.save(telegramUser);
