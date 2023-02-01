@@ -1,6 +1,8 @@
 package me.kqlqk.behealthy.tgbot.service.impl;
 
 import lombok.NonNull;
+import me.kqlqk.behealthy.tgbot.exception.TelegramUserAlreadyExistsException;
+import me.kqlqk.behealthy.tgbot.exception.TelegramUserNotFoundException;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.repository.TelegramUserRepository;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
@@ -29,7 +31,7 @@ public class TelegramUserServiceImpl implements TelegramUserService {
     @Override
     public void save(@NonNull TelegramUser telegramUser) {
         if (existsByTelegramId(telegramUser.getTelegramId())) {
-            return;//TODO add exception
+            throw new TelegramUserAlreadyExistsException("TelegramUser with telegramId = " + telegramUser.getTelegramId() + " already exists");
         }
 
         telegramUserRepository.save(telegramUser);
@@ -38,7 +40,7 @@ public class TelegramUserServiceImpl implements TelegramUserService {
     @Override
     public void update(@NonNull TelegramUser telegramUser) {
         if (!existsByTelegramId(telegramUser.getTelegramId())) {
-            return;//TODO add exception
+            throw new TelegramUserNotFoundException("TelegramUser with telegramId = " + telegramUser.getTelegramId() + " already exists");
         }
 
         telegramUserRepository.save(telegramUser);
