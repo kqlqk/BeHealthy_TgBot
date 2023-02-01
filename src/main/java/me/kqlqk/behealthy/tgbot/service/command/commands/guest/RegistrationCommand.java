@@ -1,4 +1,4 @@
-package me.kqlqk.behealthy.tgbot.service.command.commands;
+package me.kqlqk.behealthy.tgbot.service.command.commands.guest;
 
 import me.kqlqk.behealthy.tgbot.dto.TokensDTO;
 import me.kqlqk.behealthy.tgbot.dto.UserDTO;

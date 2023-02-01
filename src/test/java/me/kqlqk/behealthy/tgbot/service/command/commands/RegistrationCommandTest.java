@@ -6,6 +6,7 @@ import me.kqlqk.behealthy.tgbot.dto.UserDTO;
 import me.kqlqk.behealthy.tgbot.feign.GatewayClient;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
+import me.kqlqk.behealthy.tgbot.service.command.commands.guest.RegistrationCommand;
 import me.kqlqk.behealthy.tgbot.service.command.enums.CommandState;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,11 +43,14 @@ public class RegistrationCommandTest {
         when(update.getMessage()).thenReturn(message);
         when(message.getChatId()).thenReturn(1L);
 
-        TelegramUser tgUser = telegramUserService.getByTelegramId(1);
+        TelegramUser tgUser = new TelegramUser();
+        tgUser.setTelegramId(2);
+        tgUser.setCommandSate(CommandState.BASIC);
+        telegramUserService.save(tgUser);
 
         registrationCommand.handle(update, tgUser);
 
-        TelegramUser updatedTgUser = telegramUserService.getByTelegramId(1);
+        TelegramUser updatedTgUser = telegramUserService.getByTelegramId(2);
 
         assertThat(updatedTgUser.isActive()).isFalse();
         assertThat(updatedTgUser.getCommandSate()).isEqualTo(CommandState.REGISTRATION_WAIT_FOR_EMAIL);
@@ -56,13 +60,19 @@ public class RegistrationCommandTest {
     public void handle_shouldUpdateUser2Times() {
         when(update.getMessage()).thenReturn(message);
         when(message.getChatId()).thenReturn(1L);
-        registrationCommand.handle(update, telegramUserService.getByTelegramId(1));
 
-        TelegramUser tgUser = telegramUserService.getByTelegramId(1);
+        TelegramUser tgUser = new TelegramUser();
+        tgUser.setTelegramId(2);
+        tgUser.setCommandSate(CommandState.BASIC);
+        telegramUserService.save(tgUser);
 
         registrationCommand.handle(update, tgUser);
 
-        TelegramUser updatedTgUser = telegramUserService.getByTelegramId(1);
+
+        registrationCommand.handle(update, tgUser);
+
+
+        TelegramUser updatedTgUser = telegramUserService.getByTelegramId(2);
 
         assertThat(updatedTgUser.isActive()).isFalse();
         assertThat(updatedTgUser.getCommandSate()).isEqualTo(CommandState.REGISTRATION_WAIT_FOR_NAME);
@@ -72,14 +82,20 @@ public class RegistrationCommandTest {
     public void handle_shouldUpdateUser3Times() {
         when(update.getMessage()).thenReturn(message);
         when(message.getChatId()).thenReturn(1L);
-        registrationCommand.handle(update, telegramUserService.getByTelegramId(1));
-        registrationCommand.handle(update, telegramUserService.getByTelegramId(1));
 
-        TelegramUser tgUser = telegramUserService.getByTelegramId(1);
+        TelegramUser tgUser = new TelegramUser();
+        tgUser.setTelegramId(2);
+        tgUser.setCommandSate(CommandState.BASIC);
+        telegramUserService.save(tgUser);
+
+        registrationCommand.handle(update, tgUser);
+        registrationCommand.handle(update, tgUser);
+
 
         registrationCommand.handle(update, tgUser);
 
-        TelegramUser updatedTgUser = telegramUserService.getByTelegramId(1);
+
+        TelegramUser updatedTgUser = telegramUserService.getByTelegramId(2);
 
         assertThat(updatedTgUser.isActive()).isFalse();
         assertThat(updatedTgUser.getCommandSate()).isEqualTo(CommandState.REGISTRATION_WAIT_FOR_PASSWORD);
@@ -93,11 +109,14 @@ public class RegistrationCommandTest {
         UserDTO userDTO = new UserDTO();
         when(gatewayClient.createUser(userDTO)).thenReturn(new TokensDTO(2, "access", "refresh"));
 
-        registrationCommand.handle(update, telegramUserService.getByTelegramId(1));
-        registrationCommand.handle(update, telegramUserService.getByTelegramId(1));
-        registrationCommand.handle(update, telegramUserService.getByTelegramId(1));
+        TelegramUser tgUser = new TelegramUser();
+        tgUser.setTelegramId(2);
+        tgUser.setCommandSate(CommandState.BASIC);
+        telegramUserService.save(tgUser);
 
-        TelegramUser tgUser = telegramUserService.getByTelegramId(1);
+        registrationCommand.handle(update, telegramUserService.getByTelegramId(2));
+        registrationCommand.handle(update, telegramUserService.getByTelegramId(2));
+        registrationCommand.handle(update, telegramUserService.getByTelegramId(2));
 
 
         registrationCommand.handle(update, tgUser);

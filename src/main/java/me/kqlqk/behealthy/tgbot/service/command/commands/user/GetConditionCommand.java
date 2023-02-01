@@ -1,10 +1,9 @@
-package me.kqlqk.behealthy.tgbot.service.command.commands;
+package me.kqlqk.behealthy.tgbot.service.command.commands.user;
 
-import lombok.extern.slf4j.Slf4j;
 import me.kqlqk.behealthy.tgbot.aop.SecurityCheck;
 import me.kqlqk.behealthy.tgbot.aop.SecurityState;
 import me.kqlqk.behealthy.tgbot.dto.TokensDTO;
-import me.kqlqk.behealthy.tgbot.dto.UserDTO;
+import me.kqlqk.behealthy.tgbot.dto.UserConditionDTO;
 import me.kqlqk.behealthy.tgbot.feign.GatewayClient;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
@@ -16,23 +15,23 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Service
-@Slf4j
-public class MeCommand implements Command {
+public class GetConditionCommand implements Command {
     private SendMessage sendMessage;
-    private final GatewayClient gatewayClient;
+
     private final TelegramUserService telegramUserService;
+    private final GatewayClient gatewayClient;
 
     @Autowired
-    public MeCommand(GatewayClient gatewayClient, TelegramUserService telegramUserService) {
-        this.gatewayClient = gatewayClient;
+    public GetConditionCommand(TelegramUserService telegramUserService, GatewayClient gatewayClient) {
         this.telegramUserService = telegramUserService;
+        this.gatewayClient = gatewayClient;
     }
 
     @SecurityCheck
     @Override
-    public void handle(Update update, TelegramUser tgUser, TokensDTO accessTokenDTO, SecurityState securityState) {
+    public void handle(Update update, TelegramUser tgUser, TokensDTO tokensDTO, SecurityState securityState) {
         String chatId = update.getMessage().getChatId().toString();
-        UserDTO userDTO;
+        UserConditionDTO userConditionDTO;
 
         if (securityState == SecurityState.SHOULD_RELOGIN) {
             sendMessage = new SendMessage(chatId, "Sorry, you should sign in again");
@@ -40,18 +39,24 @@ public class MeCommand implements Command {
             tgUser.setActive(false);
 
             telegramUserService.update(tgUser);
-        }
-
-        try {
-            userDTO = gatewayClient.getUser(tgUser.getUserId(), accessTokenDTO.getAccessToken());
-        }
-        catch (RuntimeException e) {
-            sendMessage = new SendMessage(chatId, e.getMessage());
-            log.error("Cannot get user from gateway client", e);
             return;
         }
 
-        String text = "Name: " + userDTO.getName() + "\nEmail: " + userDTO.getEmail();
+        try {
+            userConditionDTO = gatewayClient.getUserCondition(tgUser.getUserId(), tokensDTO.getAccessToken());
+        }
+        catch (RuntimeException e) {
+            sendMessage = new SendMessage(chatId, e.getMessage());
+            return;
+        }
+
+        String text = "Gender: " + userConditionDTO.getGender() +
+                "\nAge: " + userConditionDTO.getAge() +
+                "\nHeight: " + userConditionDTO.getHeight() +
+                "\nWeight: " + userConditionDTO.getWeight() +
+                "\nIntensity: " + userConditionDTO.getIntensity() +
+                "\nGoal: " + userConditionDTO.getGoal() +
+                "\nFat percent: " + userConditionDTO.getFatPercent();
 
         sendMessage = new SendMessage(chatId, text);
     }

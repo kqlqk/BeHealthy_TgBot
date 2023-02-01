@@ -6,6 +6,7 @@ import me.kqlqk.behealthy.tgbot.dto.UserDTO;
 import me.kqlqk.behealthy.tgbot.feign.GatewayClient;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
+import me.kqlqk.behealthy.tgbot.service.command.commands.guest.LoginCommand;
 import me.kqlqk.behealthy.tgbot.service.command.enums.CommandState;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

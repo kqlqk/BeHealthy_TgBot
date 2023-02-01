@@ -6,7 +6,12 @@ import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
 import me.kqlqk.behealthy.tgbot.service.UpdateService;
 import me.kqlqk.behealthy.tgbot.service.command.Command;
-import me.kqlqk.behealthy.tgbot.service.command.commands.*;
+import me.kqlqk.behealthy.tgbot.service.command.commands.guest.DefaultCommand;
+import me.kqlqk.behealthy.tgbot.service.command.commands.guest.LoginCommand;
+import me.kqlqk.behealthy.tgbot.service.command.commands.guest.RegistrationCommand;
+import me.kqlqk.behealthy.tgbot.service.command.commands.guest.StartCommand;
+import me.kqlqk.behealthy.tgbot.service.command.commands.user.GetConditionCommand;
+import me.kqlqk.behealthy.tgbot.service.command.commands.user.MeCommand;
 import me.kqlqk.behealthy.tgbot.service.command.enums.CommandState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -93,6 +98,9 @@ public class UpdateServiceImpl implements UpdateService {
 
             case "/me":
                 return handleAndReturnSendObject(update, tgUser, "meCommand", MeCommand.class, new TokensDTO(), SecurityState.OK);
+
+            case "/get_condition":
+                return handleAndReturnSendObject(update, tgUser, "getConditionCommand", GetConditionCommand.class, new TokensDTO(), SecurityState.OK);
 
             default:
                 return null;

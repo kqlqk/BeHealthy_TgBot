@@ -54,6 +54,7 @@ public class BotCfg extends TelegramLongPollingBot {
         botCommands.add(new BotCommand("/login", "Sign in"));
         botCommands.add(new BotCommand("/registration", "Sign up"));
         botCommands.add(new BotCommand("/me", "Information about your account"));
+        botCommands.add(new BotCommand("/get_condition", "Get your body condition"));
     }
 
 

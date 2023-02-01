@@ -1,4 +1,4 @@
-package me.kqlqk.behealthy.tgbot.service.command.commands;
+package me.kqlqk.behealthy.tgbot.service.command.commands.guest;
 
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.command.Command;
@@ -7,21 +7,12 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Service
-public class StartCommand implements Command {
+public class DefaultCommand implements Command {
     private SendMessage sendMessage;
 
     @Override
     public void handle(Update update, TelegramUser tgUser) {
-        String text;
-
-        if (tgUser.isActive()) {
-            text = "You already signed into your account";
-        }
-        else {
-            text = "Hello, " + update.getMessage().getChat().getFirstName() + ". You should sign into your account.";
-        }
-
-        this.sendMessage = new SendMessage(update.getMessage().getChatId().toString(), text);
+        sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Please, sign in or sign up");
     }
 
     @Override
