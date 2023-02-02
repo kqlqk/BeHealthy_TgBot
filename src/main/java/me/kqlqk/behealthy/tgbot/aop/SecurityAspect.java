@@ -1,7 +1,7 @@
 package me.kqlqk.behealthy.tgbot.aop;
 
 import lombok.extern.slf4j.Slf4j;
-import me.kqlqk.behealthy.tgbot.dto.TokensDTO;
+import me.kqlqk.behealthy.tgbot.dto.authService.TokensDTO;
 import me.kqlqk.behealthy.tgbot.exception.BadUserDataException;
 import me.kqlqk.behealthy.tgbot.exception.NoRightsException;
 import me.kqlqk.behealthy.tgbot.feign.GatewayClient;

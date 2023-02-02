@@ -2,8 +2,8 @@ package me.kqlqk.behealthy.tgbot.service.command.commands.user;
 
 import me.kqlqk.behealthy.tgbot.aop.SecurityCheck;
 import me.kqlqk.behealthy.tgbot.aop.SecurityState;
-import me.kqlqk.behealthy.tgbot.dto.TokensDTO;
-import me.kqlqk.behealthy.tgbot.dto.UserConditionDTO;
+import me.kqlqk.behealthy.tgbot.dto.authService.TokensDTO;
+import me.kqlqk.behealthy.tgbot.dto.conditionService.UserConditionDTO;
 import me.kqlqk.behealthy.tgbot.exception.BadUserDataException;
 import me.kqlqk.behealthy.tgbot.feign.GatewayClient;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;

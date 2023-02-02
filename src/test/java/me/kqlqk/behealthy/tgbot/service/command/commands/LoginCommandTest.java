@@ -1,8 +1,8 @@
 package me.kqlqk.behealthy.tgbot.service.command.commands;
 
 import annotations.ServiceTest;
-import me.kqlqk.behealthy.tgbot.dto.TokensDTO;
-import me.kqlqk.behealthy.tgbot.dto.UserDTO;
+import me.kqlqk.behealthy.tgbot.dto.authService.TokensDTO;
+import me.kqlqk.behealthy.tgbot.dto.authService.UserDTO;
 import me.kqlqk.behealthy.tgbot.feign.GatewayClient;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;

@@ -1,7 +1,7 @@
 package me.kqlqk.behealthy.tgbot.service.impl;
 
 import me.kqlqk.behealthy.tgbot.aop.SecurityState;
-import me.kqlqk.behealthy.tgbot.dto.TokensDTO;
+import me.kqlqk.behealthy.tgbot.dto.authService.TokensDTO;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
 import me.kqlqk.behealthy.tgbot.service.UpdateService;
@@ -13,6 +13,7 @@ import me.kqlqk.behealthy.tgbot.service.command.commands.guest.StartCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.user.GetConditionCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.user.MeCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.user.SetConditionCommand;
+import me.kqlqk.behealthy.tgbot.service.command.commands.user.SetConditionNoFatPercentCommand;
 import me.kqlqk.behealthy.tgbot.service.command.enums.CommandState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -106,6 +107,10 @@ public class UpdateServiceImpl implements UpdateService {
                 return handleAndReturnSendObject(update, tgUser, "setConditionCommand", SetConditionCommand.class,
                                                  new TokensDTO(), SecurityState.OK);
 
+            case "/set_condition_no_fat_percent":
+                return handleAndReturnSendObject(update, tgUser, "setConditionNoFatPercentCommand", SetConditionNoFatPercentCommand.class,
+                                                 new TokensDTO(), SecurityState.OK);
+
             default:
                 return null;
         }
@@ -121,6 +126,12 @@ public class UpdateServiceImpl implements UpdateService {
 
             case SET_CONDITION_WAIT_FOR_DATA:
                 return handleAndReturnSendObject(update, tgUser, "setConditionCommand", SetConditionCommand.class,
+                                                 new TokensDTO(), SecurityState.OK);
+
+            case SET_CONDITION_NO_FAT_PERCENT_WAIT_FOR_GENDER:
+            case SET_CONDITION_NO_FAT_PERCENT_WAIT_FOR_DATA_MALE:
+            case SET_CONDITION_NO_FAT_PERCENT_WAIT_FOR_DATA_FEMALE:
+                return handleAndReturnSendObject(update, tgUser, "setConditionNoFatPercentCommand", SetConditionNoFatPercentCommand.class,
                                                  new TokensDTO(), SecurityState.OK);
         }
 
