@@ -10,10 +10,7 @@ import me.kqlqk.behealthy.tgbot.service.command.commands.guest.DefaultCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.guest.LoginCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.guest.RegistrationCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.guest.StartCommand;
-import me.kqlqk.behealthy.tgbot.service.command.commands.user.GetConditionCommand;
-import me.kqlqk.behealthy.tgbot.service.command.commands.user.MeCommand;
-import me.kqlqk.behealthy.tgbot.service.command.commands.user.SetConditionCommand;
-import me.kqlqk.behealthy.tgbot.service.command.commands.user.SetConditionNoFatPercentCommand;
+import me.kqlqk.behealthy.tgbot.service.command.commands.user.*;
 import me.kqlqk.behealthy.tgbot.service.command.enums.CommandState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -111,6 +108,10 @@ public class UpdateServiceImpl implements UpdateService {
                 return handleAndReturnSendObject(update, tgUser, "setConditionNoFatPercentCommand", SetConditionNoFatPercentCommand.class,
                                                  new TokensDTO(), SecurityState.OK);
 
+            case "/update_condition":
+                return handleAndReturnSendObject(update, tgUser, "updateConditionCommand", UpdateConditionCommand.class,
+                                                 new TokensDTO(), SecurityState.OK);
+
             default:
                 return null;
         }
@@ -132,6 +133,10 @@ public class UpdateServiceImpl implements UpdateService {
             case SET_CONDITION_NO_FAT_PERCENT_WAIT_FOR_DATA_MALE:
             case SET_CONDITION_NO_FAT_PERCENT_WAIT_FOR_DATA_FEMALE:
                 return handleAndReturnSendObject(update, tgUser, "setConditionNoFatPercentCommand", SetConditionNoFatPercentCommand.class,
+                                                 new TokensDTO(), SecurityState.OK);
+
+            case UPDATE_CONDITION_WAIT_FOR_DATA:
+                return handleAndReturnSendObject(update, tgUser, "updateConditionCommand", UpdateConditionCommand.class,
                                                  new TokensDTO(), SecurityState.OK);
         }
 

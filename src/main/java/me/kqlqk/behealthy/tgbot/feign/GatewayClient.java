@@ -6,6 +6,7 @@ import me.kqlqk.behealthy.tgbot.dto.conditionService.UserConditionDTO;
 import me.kqlqk.behealthy.tgbot.dto.conditionService.UserConditionWithoutFatPercentFemaleDTO;
 import me.kqlqk.behealthy.tgbot.dto.conditionService.UserConditionWithoutFatPercentMaleDTO;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @FeignClient(name = "gateway")
@@ -42,4 +43,9 @@ public interface GatewayClient {
     void createUserConditionWithoutFatPercentFemale(@PathVariable long id,
                                                     @RequestBody UserConditionWithoutFatPercentFemaleDTO userConditionWithoutFatPercentFemaleDTO,
                                                     @RequestHeader String authorization);
+
+    @PutMapping("/api/v1/users/{id}/condition")
+    ResponseEntity<?> updateUserCondition(@PathVariable long id,
+                                          @RequestBody UserConditionDTO userConditionDTO,
+                                          @RequestHeader String authorization);
 }
