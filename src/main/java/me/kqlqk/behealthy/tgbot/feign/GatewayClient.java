@@ -2,6 +2,7 @@ package me.kqlqk.behealthy.tgbot.feign;
 
 import me.kqlqk.behealthy.tgbot.dto.authService.TokensDTO;
 import me.kqlqk.behealthy.tgbot.dto.authService.UserDTO;
+import me.kqlqk.behealthy.tgbot.dto.conditionService.DailyKcalsDTO;
 import me.kqlqk.behealthy.tgbot.dto.conditionService.UserConditionDTO;
 import me.kqlqk.behealthy.tgbot.dto.conditionService.UserConditionWithoutFatPercentFemaleDTO;
 import me.kqlqk.behealthy.tgbot.dto.conditionService.UserConditionWithoutFatPercentMaleDTO;
@@ -48,4 +49,7 @@ public interface GatewayClient {
     ResponseEntity<?> updateUserCondition(@PathVariable long id,
                                           @RequestBody UserConditionDTO userConditionDTO,
                                           @RequestHeader String authorization);
+
+    @GetMapping("/api/v1/users/{id}/kcals")
+    DailyKcalsDTO getUserDailyKcals(@PathVariable long id, @RequestHeader String authorization);
 }

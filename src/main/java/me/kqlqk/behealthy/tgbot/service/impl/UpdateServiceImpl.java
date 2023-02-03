@@ -112,6 +112,10 @@ public class UpdateServiceImpl implements UpdateService {
                 return handleAndReturnSendObject(update, tgUser, "updateConditionCommand", UpdateConditionCommand.class,
                                                  new TokensDTO(), SecurityState.OK);
 
+            case "/daily_kcals":
+                return handleAndReturnSendObject(update, tgUser, "dailyKcalsCommand", DailyKcalsCommand.class,
+                                                 new TokensDTO(), SecurityState.OK);
+
             default:
                 return null;
         }
