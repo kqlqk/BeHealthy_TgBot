@@ -8,7 +8,7 @@ import me.kqlqk.behealthy.tgbot.service.command.enums.CommandState;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "telegram_user", schema = "public", catalog = "tgbotdb")
+@Table(name = "telegram_user", schema = "public", catalog = "tg_bot_db")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
