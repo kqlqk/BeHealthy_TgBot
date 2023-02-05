@@ -59,6 +59,7 @@ public class BotCfg extends TelegramLongPollingBot {
         botCommands.add(new BotCommand("/set_condition_no_fat_percent", "Add your body condition if you don't know your body fat percent"));
         botCommands.add(new BotCommand("/update_condition", "Update your body condition"));
         botCommands.add(new BotCommand("/daily_kcals", "Get your daily kcals"));
+        botCommands.add(new BotCommand("/add_food", "Add your food for tracking"));
     }
 
 

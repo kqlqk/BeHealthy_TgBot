@@ -2,10 +2,7 @@ package me.kqlqk.behealthy.tgbot.feign;
 
 import me.kqlqk.behealthy.tgbot.dto.auth_service.TokensDTO;
 import me.kqlqk.behealthy.tgbot.dto.auth_service.UserDTO;
-import me.kqlqk.behealthy.tgbot.dto.condition_service.DailyKcalsDTO;
-import me.kqlqk.behealthy.tgbot.dto.condition_service.UserConditionDTO;
-import me.kqlqk.behealthy.tgbot.dto.condition_service.UserConditionWithoutFatPercentFemaleDTO;
-import me.kqlqk.behealthy.tgbot.dto.condition_service.UserConditionWithoutFatPercentMaleDTO;
+import me.kqlqk.behealthy.tgbot.dto.condition_service.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,4 +49,7 @@ public interface GatewayClient {
 
     @GetMapping("/api/v1/users/{id}/kcals")
     DailyKcalsDTO getUserDailyKcals(@PathVariable long id, @RequestHeader String authorization);
+
+    @PostMapping("/api/v1/users/{id}/food")
+    void addDailyAteFoods(@PathVariable long id, @RequestBody DailyAteFoodDTO dailyAteFoodDTO, @RequestHeader String authorization);
 }
