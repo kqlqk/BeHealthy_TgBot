@@ -7,6 +7,8 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @FeignClient(name = "gateway")
 public interface GatewayClient {
 
@@ -52,4 +54,7 @@ public interface GatewayClient {
 
     @PostMapping("/api/v1/users/{id}/food")
     void addDailyAteFoods(@PathVariable long id, @RequestBody DailyAteFoodDTO dailyAteFoodDTO, @RequestHeader String authorization);
+
+    @GetMapping("/api/v1/users/{id}/food")
+    List<DailyAteFoodDTO> getDailyAteFoods(@PathVariable long id, @RequestHeader String authorization);
 }

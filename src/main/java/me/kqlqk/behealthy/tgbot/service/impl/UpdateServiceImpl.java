@@ -121,6 +121,10 @@ public class UpdateServiceImpl implements UpdateService {
                 return handleAndReturnSendObject(update, tgUser, "addFoodCommand", AddFoodCommand.class,
                                                  new TokensDTO(), SecurityState.OK);
 
+            case "/get_food":
+                return handleAndReturnSendObject(update, tgUser, "getFoodCommand", GetFoodCommand.class,
+                                                 new TokensDTO(), SecurityState.OK);
+
             default:
                 return null;
         }
