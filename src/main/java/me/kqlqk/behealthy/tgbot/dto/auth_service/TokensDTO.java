@@ -1,4 +1,4 @@
-package me.kqlqk.behealthy.tgbot.dto.authService;
+package me.kqlqk.behealthy.tgbot.dto.auth_service;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

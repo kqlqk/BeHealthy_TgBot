@@ -1,4 +1,4 @@
-package me.kqlqk.behealthy.tgbot.dto.conditionService;
+package me.kqlqk.behealthy.tgbot.dto.condition_service;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

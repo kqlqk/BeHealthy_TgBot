@@ -1,10 +1,10 @@
-package me.kqlqk.behealthy.tgbot.service.command.commands.user;
+package me.kqlqk.behealthy.tgbot.service.command.commands.user.condition_service;
 
 import me.kqlqk.behealthy.tgbot.aop.SecurityCheck;
 import me.kqlqk.behealthy.tgbot.aop.SecurityState;
-import me.kqlqk.behealthy.tgbot.dto.authService.TokensDTO;
-import me.kqlqk.behealthy.tgbot.dto.conditionService.UserConditionWithoutFatPercentFemaleDTO;
-import me.kqlqk.behealthy.tgbot.dto.conditionService.UserConditionWithoutFatPercentMaleDTO;
+import me.kqlqk.behealthy.tgbot.dto.auth_service.TokensDTO;
+import me.kqlqk.behealthy.tgbot.dto.condition_service.UserConditionWithoutFatPercentFemaleDTO;
+import me.kqlqk.behealthy.tgbot.dto.condition_service.UserConditionWithoutFatPercentMaleDTO;
 import me.kqlqk.behealthy.tgbot.exception.BadUserDataException;
 import me.kqlqk.behealthy.tgbot.feign.GatewayClient;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
