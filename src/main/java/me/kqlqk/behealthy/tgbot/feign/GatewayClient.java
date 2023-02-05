@@ -57,4 +57,7 @@ public interface GatewayClient {
 
     @GetMapping("/api/v1/users/{id}/food")
     List<DailyAteFoodDTO> getDailyAteFoods(@PathVariable long id, @RequestHeader String authorization);
+
+    @DeleteMapping("/api/v1/users/{id}/food")
+    void deleteDailyAteFood(@PathVariable long id, @RequestParam long productId, @RequestHeader String authorization);
 }

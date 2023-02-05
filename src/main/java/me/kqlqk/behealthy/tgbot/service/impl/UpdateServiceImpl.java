@@ -125,6 +125,10 @@ public class UpdateServiceImpl implements UpdateService {
                 return handleAndReturnSendObject(update, tgUser, "getFoodCommand", GetFoodCommand.class,
                                                  new TokensDTO(), SecurityState.OK);
 
+            case "/delete_food":
+                return handleAndReturnSendObject(update, tgUser, "deleteFoodCommand", DeleteFoodCommand.class,
+                                                 new TokensDTO(), SecurityState.OK);
+
             default:
                 return null;
         }
@@ -154,6 +158,10 @@ public class UpdateServiceImpl implements UpdateService {
 
             case ADD_FOOD_WAIT_FOR_DATA:
                 return handleAndReturnSendObject(update, tgUser, "addFoodCommand", AddFoodCommand.class,
+                                                 new TokensDTO(), SecurityState.OK);
+
+            case DELETE_FOOD_WAIT_FOR_DATA:
+                return handleAndReturnSendObject(update, tgUser, "deleteFoodCommand", DeleteFoodCommand.class,
                                                  new TokensDTO(), SecurityState.OK);
         }
 
