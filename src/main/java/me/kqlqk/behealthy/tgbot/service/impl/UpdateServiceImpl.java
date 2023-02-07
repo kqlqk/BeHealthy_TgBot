@@ -14,6 +14,7 @@ import me.kqlqk.behealthy.tgbot.service.command.commands.user.auth_service.MeCom
 import me.kqlqk.behealthy.tgbot.service.command.commands.user.condition_service.*;
 import me.kqlqk.behealthy.tgbot.service.command.commands.user.workout_service.CreateWorkoutCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.user.workout_service.GetWorkoutCommand;
+import me.kqlqk.behealthy.tgbot.service.command.commands.user.workout_service.UpdateWorkoutCommand;
 import me.kqlqk.behealthy.tgbot.service.command.enums.CommandState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -130,6 +131,9 @@ public class UpdateServiceImpl implements UpdateService {
             case "/get_workout":
                 return handleAndReturnSendObject(update, tgUser, "getWorkoutCommand", GetWorkoutCommand.class, new TokensDTO());
 
+            case "/update_workout":
+                return handleAndReturnSendObject(update, tgUser, "updateWorkoutCommand", UpdateWorkoutCommand.class, new TokensDTO());
+
             default:
                 return null;
         }
@@ -163,6 +167,9 @@ public class UpdateServiceImpl implements UpdateService {
 
             case CREATE_WORKOUT_WAIT_FOR_DATA:
                 return handleAndReturnSendObject(update, tgUser, "createWorkoutCommand", CreateWorkoutCommand.class, new TokensDTO());
+
+            case UPDATE_WORKOUT_WAIT_FOR_DATA:
+                return handleAndReturnSendObject(update, tgUser, "updateWorkoutCommand", UpdateWorkoutCommand.class, new TokensDTO());
         }
 
         return null;

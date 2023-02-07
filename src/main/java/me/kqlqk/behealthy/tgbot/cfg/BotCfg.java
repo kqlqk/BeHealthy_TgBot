@@ -64,6 +64,7 @@ public class BotCfg extends TelegramLongPollingBot {
         botCommands.add(new BotCommand("/delete_food", "Delete your ate food"));
         botCommands.add(new BotCommand("/create_workout", "Create your workout plan"));
         botCommands.add(new BotCommand("/get_workout", "Get your workout plan"));
+        botCommands.add(new BotCommand("/update_workout", "Update your workout plan"));
     }
 
 

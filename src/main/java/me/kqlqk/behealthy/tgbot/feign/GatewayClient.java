@@ -66,4 +66,7 @@ public interface GatewayClient {
 
     @GetMapping("/api/v1/users/{id}/workout")
     List<WorkoutInfoDTO> getWorkout(@PathVariable long id, @RequestHeader String authorization);
+
+    @PutMapping("/api/v1/users/{id}/workout")
+    void updateWorkout(@PathVariable long id, @RequestBody WorkoutInfoDTO workoutInfoDTO, @RequestHeader String authorization);
 }
