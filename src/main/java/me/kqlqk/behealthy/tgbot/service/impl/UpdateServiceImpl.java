@@ -14,6 +14,7 @@ import me.kqlqk.behealthy.tgbot.service.command.commands.user.auth_service.MeCom
 import me.kqlqk.behealthy.tgbot.service.command.commands.user.condition_service.*;
 import me.kqlqk.behealthy.tgbot.service.command.commands.user.workout_service.CreateWorkoutCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.user.workout_service.GetWorkoutCommand;
+import me.kqlqk.behealthy.tgbot.service.command.commands.user.workout_service.UpdateWorkoutByAlternativeExerciseCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.user.workout_service.UpdateWorkoutCommand;
 import me.kqlqk.behealthy.tgbot.service.command.enums.CommandState;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,6 +135,10 @@ public class UpdateServiceImpl implements UpdateService {
             case "/update_workout":
                 return handleAndReturnSendObject(update, tgUser, "updateWorkoutCommand", UpdateWorkoutCommand.class, new TokensDTO());
 
+            case "/update_workout_by_alternative":
+                return handleAndReturnSendObject(update, tgUser, "updateWorkoutByAlternativeExerciseCommand",
+                                                 UpdateWorkoutByAlternativeExerciseCommand.class, new TokensDTO());
+
             default:
                 return null;
         }
@@ -170,6 +175,10 @@ public class UpdateServiceImpl implements UpdateService {
 
             case UPDATE_WORKOUT_WAIT_FOR_DATA:
                 return handleAndReturnSendObject(update, tgUser, "updateWorkoutCommand", UpdateWorkoutCommand.class, new TokensDTO());
+
+            case UPDATE_WITH_ALTERNATIVE_EXERCISE_WORKOUT_WAIT_FOR_DATA:
+                return handleAndReturnSendObject(update, tgUser, "updateWorkoutByAlternativeExerciseCommand",
+                                                 UpdateWorkoutByAlternativeExerciseCommand.class, new TokensDTO());
         }
 
         return null;
