@@ -12,6 +12,8 @@ import me.kqlqk.behealthy.tgbot.service.command.commands.guest.RegistrationComma
 import me.kqlqk.behealthy.tgbot.service.command.commands.guest.StartCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.user.auth_service.MeCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.user.condition_service.*;
+import me.kqlqk.behealthy.tgbot.service.command.commands.user.workout_service.CreateWorkoutCommand;
+import me.kqlqk.behealthy.tgbot.service.command.commands.user.workout_service.GetWorkoutCommand;
 import me.kqlqk.behealthy.tgbot.service.command.enums.CommandState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -95,39 +97,38 @@ public class UpdateServiceImpl implements UpdateService {
                 return handleAndReturnSendObject(update, tgUser, "registrationCommand", RegistrationCommand.class);
 
             case "/me":
-                return handleAndReturnSendObject(update, tgUser, "meCommand", MeCommand.class, new TokensDTO(), SecurityState.OK);
+                return handleAndReturnSendObject(update, tgUser, "meCommand", MeCommand.class, new TokensDTO());
 
             case "/get_condition":
-                return handleAndReturnSendObject(update, tgUser, "getConditionCommand", GetConditionCommand.class,
-                                                 new TokensDTO(), SecurityState.OK);
+                return handleAndReturnSendObject(update, tgUser, "getConditionCommand", GetConditionCommand.class, new TokensDTO());
 
             case "/set_condition":
-                return handleAndReturnSendObject(update, tgUser, "setConditionCommand", SetConditionCommand.class,
-                                                 new TokensDTO(), SecurityState.OK);
+                return handleAndReturnSendObject(update, tgUser, "setConditionCommand", SetConditionCommand.class, new TokensDTO());
 
             case "/set_condition_no_fat_percent":
                 return handleAndReturnSendObject(update, tgUser, "setConditionNoFatPercentCommand", SetConditionNoFatPercentCommand.class,
-                                                 new TokensDTO(), SecurityState.OK);
+                                                 new TokensDTO());
 
             case "/update_condition":
-                return handleAndReturnSendObject(update, tgUser, "updateConditionCommand", UpdateConditionCommand.class,
-                                                 new TokensDTO(), SecurityState.OK);
+                return handleAndReturnSendObject(update, tgUser, "updateConditionCommand", UpdateConditionCommand.class, new TokensDTO());
 
             case "/daily_kcals":
-                return handleAndReturnSendObject(update, tgUser, "dailyKcalsCommand", DailyKcalsCommand.class,
-                                                 new TokensDTO(), SecurityState.OK);
+                return handleAndReturnSendObject(update, tgUser, "dailyKcalsCommand", DailyKcalsCommand.class, new TokensDTO());
 
             case "/add_food":
-                return handleAndReturnSendObject(update, tgUser, "addFoodCommand", AddFoodCommand.class,
-                                                 new TokensDTO(), SecurityState.OK);
+                return handleAndReturnSendObject(update, tgUser, "addFoodCommand", AddFoodCommand.class, new TokensDTO());
 
             case "/get_food":
-                return handleAndReturnSendObject(update, tgUser, "getFoodCommand", GetFoodCommand.class,
-                                                 new TokensDTO(), SecurityState.OK);
+                return handleAndReturnSendObject(update, tgUser, "getFoodCommand", GetFoodCommand.class, new TokensDTO());
 
             case "/delete_food":
-                return handleAndReturnSendObject(update, tgUser, "deleteFoodCommand", DeleteFoodCommand.class,
-                                                 new TokensDTO(), SecurityState.OK);
+                return handleAndReturnSendObject(update, tgUser, "deleteFoodCommand", DeleteFoodCommand.class, new TokensDTO());
+
+            case "/create_workout":
+                return handleAndReturnSendObject(update, tgUser, "createWorkoutCommand", CreateWorkoutCommand.class, new TokensDTO());
+
+            case "/get_workout":
+                return handleAndReturnSendObject(update, tgUser, "getWorkoutCommand", GetWorkoutCommand.class, new TokensDTO());
 
             default:
                 return null;
@@ -143,26 +144,25 @@ public class UpdateServiceImpl implements UpdateService {
                 return handleAndReturnSendObject(update, tgUser, "registrationCommand", RegistrationCommand.class);
 
             case SET_CONDITION_WAIT_FOR_DATA:
-                return handleAndReturnSendObject(update, tgUser, "setConditionCommand", SetConditionCommand.class,
-                                                 new TokensDTO(), SecurityState.OK);
+                return handleAndReturnSendObject(update, tgUser, "setConditionCommand", SetConditionCommand.class, new TokensDTO());
 
             case SET_CONDITION_NO_FAT_PERCENT_WAIT_FOR_GENDER:
             case SET_CONDITION_NO_FAT_PERCENT_WAIT_FOR_DATA_MALE:
             case SET_CONDITION_NO_FAT_PERCENT_WAIT_FOR_DATA_FEMALE:
                 return handleAndReturnSendObject(update, tgUser, "setConditionNoFatPercentCommand", SetConditionNoFatPercentCommand.class,
-                                                 new TokensDTO(), SecurityState.OK);
+                                                 new TokensDTO());
 
             case UPDATE_CONDITION_WAIT_FOR_DATA:
-                return handleAndReturnSendObject(update, tgUser, "updateConditionCommand", UpdateConditionCommand.class,
-                                                 new TokensDTO(), SecurityState.OK);
+                return handleAndReturnSendObject(update, tgUser, "updateConditionCommand", UpdateConditionCommand.class, new TokensDTO());
 
             case ADD_FOOD_WAIT_FOR_DATA:
-                return handleAndReturnSendObject(update, tgUser, "addFoodCommand", AddFoodCommand.class,
-                                                 new TokensDTO(), SecurityState.OK);
+                return handleAndReturnSendObject(update, tgUser, "addFoodCommand", AddFoodCommand.class, new TokensDTO());
 
             case DELETE_FOOD_WAIT_FOR_DATA:
-                return handleAndReturnSendObject(update, tgUser, "deleteFoodCommand", DeleteFoodCommand.class,
-                                                 new TokensDTO(), SecurityState.OK);
+                return handleAndReturnSendObject(update, tgUser, "deleteFoodCommand", DeleteFoodCommand.class, new TokensDTO());
+
+            case CREATE_WORKOUT_WAIT_FOR_DATA:
+                return handleAndReturnSendObject(update, tgUser, "createWorkoutCommand", CreateWorkoutCommand.class, new TokensDTO());
         }
 
         return null;
@@ -183,11 +183,10 @@ public class UpdateServiceImpl implements UpdateService {
                                                  TelegramUser tgUser,
                                                  String beanName,
                                                  Class<? extends Command> clazz,
-                                                 TokensDTO tokensDTO,
-                                                 SecurityState securityState) {
+                                                 TokensDTO tokensDTO) {
         command = context.getBean(beanName, clazz);
 
-        command.handle(update, tgUser, tokensDTO, securityState);
+        command.handle(update, tgUser, tokensDTO, SecurityState.OK);
 
         return command.getSendMessage();
     }
