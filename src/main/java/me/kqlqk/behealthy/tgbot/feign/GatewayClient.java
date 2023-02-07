@@ -3,6 +3,7 @@ package me.kqlqk.behealthy.tgbot.feign;
 import me.kqlqk.behealthy.tgbot.dto.auth_service.TokensDTO;
 import me.kqlqk.behealthy.tgbot.dto.auth_service.UserDTO;
 import me.kqlqk.behealthy.tgbot.dto.condition_service.*;
+import me.kqlqk.behealthy.tgbot.dto.workout_dto.ExerciseDTO;
 import me.kqlqk.behealthy.tgbot.dto.workout_dto.WorkoutInfoDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -72,4 +73,10 @@ public interface GatewayClient {
 
     @PutMapping("/api/v1/users/{id}/workout/alternative")
     void updateWorkoutWithAlternativeExercise(@PathVariable long id, @RequestParam String exercise, @RequestHeader String authorization);
+
+    @GetMapping("/api/v1/users/{id}/exercises")
+    ExerciseDTO getExercisesByName(@PathVariable long id, @RequestParam String name, @RequestHeader String authorization);
+
+    @GetMapping("/api/v1/users/{id}/exercises")
+    List<ExerciseDTO> getExercisesByMuscleGroup(@PathVariable long id, @RequestParam String muscleGroup, @RequestHeader String authorization);
 }

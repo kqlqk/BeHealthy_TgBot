@@ -66,6 +66,8 @@ public class BotCfg extends TelegramLongPollingBot {
         botCommands.add(new BotCommand("/get_workout", "Get your workout plan"));
         botCommands.add(new BotCommand("/update_workout", "Update your workout plan"));
         botCommands.add(new BotCommand("/update_workout_by_alternative", "Update your workout plan by alternative exercise"));
+        botCommands.add(new BotCommand("/get_exercise_by_name", "Get exercise by name"));
+        botCommands.add(new BotCommand("/get_exercises_by_muscle_group", "Get exercise by muscle group"));
     }
 
 

@@ -12,10 +12,7 @@ import me.kqlqk.behealthy.tgbot.service.command.commands.guest.RegistrationComma
 import me.kqlqk.behealthy.tgbot.service.command.commands.guest.StartCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.user.auth_service.MeCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.user.condition_service.*;
-import me.kqlqk.behealthy.tgbot.service.command.commands.user.workout_service.CreateWorkoutCommand;
-import me.kqlqk.behealthy.tgbot.service.command.commands.user.workout_service.GetWorkoutCommand;
-import me.kqlqk.behealthy.tgbot.service.command.commands.user.workout_service.UpdateWorkoutByAlternativeExerciseCommand;
-import me.kqlqk.behealthy.tgbot.service.command.commands.user.workout_service.UpdateWorkoutCommand;
+import me.kqlqk.behealthy.tgbot.service.command.commands.user.workout_service.*;
 import me.kqlqk.behealthy.tgbot.service.command.enums.CommandState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -139,6 +136,13 @@ public class UpdateServiceImpl implements UpdateService {
                 return handleAndReturnSendObject(update, tgUser, "updateWorkoutByAlternativeExerciseCommand",
                                                  UpdateWorkoutByAlternativeExerciseCommand.class, new TokensDTO());
 
+            case "/get_exercise_by_name":
+                return handleAndReturnSendObject(update, tgUser, "getExerciseByNameCommand", GetExerciseByNameCommand.class, new TokensDTO());
+
+            case "/get_exercises_by_muscle_group":
+                return handleAndReturnSendObject(update, tgUser, "getExercisesByMuscleGroupCommand",
+                                                 GetExercisesByMuscleGroupCommand.class, new TokensDTO());
+
             default:
                 return null;
         }
@@ -179,6 +183,13 @@ public class UpdateServiceImpl implements UpdateService {
             case UPDATE_WITH_ALTERNATIVE_EXERCISE_WORKOUT_WAIT_FOR_DATA:
                 return handleAndReturnSendObject(update, tgUser, "updateWorkoutByAlternativeExerciseCommand",
                                                  UpdateWorkoutByAlternativeExerciseCommand.class, new TokensDTO());
+
+            case GET_EXERCISE_BY_NAME_WAIT_FOR_DATA:
+                return handleAndReturnSendObject(update, tgUser, "getExerciseByNameCommand", GetExerciseByNameCommand.class, new TokensDTO());
+
+            case GET_EXERCISES_BY_MUSCLE_GROUP_WAIT_FOR_DATA:
+                return handleAndReturnSendObject(update, tgUser, "getExercisesByMuscleGroupCommand",
+                                                 GetExercisesByMuscleGroupCommand.class, new TokensDTO());
         }
 
         return null;
