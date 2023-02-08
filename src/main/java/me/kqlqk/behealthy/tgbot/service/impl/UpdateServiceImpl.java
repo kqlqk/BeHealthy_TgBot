@@ -6,6 +6,7 @@ import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
 import me.kqlqk.behealthy.tgbot.service.UpdateService;
 import me.kqlqk.behealthy.tgbot.service.command.Command;
+import me.kqlqk.behealthy.tgbot.service.command.commands.BackCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.guest.DefaultCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.guest.LoginCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.guest.RegistrationCommand;
@@ -48,6 +49,10 @@ public class UpdateServiceImpl implements UpdateService {
         }
 
         TelegramUser tgUser = telegramUserService.getByTelegramId(tgId);
+
+        if (update.getMessage().getText().equals("/back")) {
+            return handleAndReturnSendObject(update, tgUser, "backCommand", BackCommand.class);
+        }
 
         if (!tgUser.isActive()) {
             return choosingForInactiveUsers(update, tgUser);
