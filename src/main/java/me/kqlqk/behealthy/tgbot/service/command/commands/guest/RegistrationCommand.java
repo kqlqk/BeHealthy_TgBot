@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class RegistrationCommand implements Command {
     private final GatewayClient gatewayClient;
@@ -33,6 +36,7 @@ public class RegistrationCommand implements Command {
 
         if (tgUser.isActive()) {
             sendMessage = new SendMessage(chatId, "You already signed up");
+            sendMessage.setReplyMarkup(defaultKeyboard(true));
             return;
         }
 
@@ -40,6 +44,7 @@ public class RegistrationCommand implements Command {
             String text = "Enter your email, name and password." +
                     "\nUse the following pattern: email name password";
             sendMessage = new SendMessage(chatId, text);
+            sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
 
             tgUser.setCommandSate(CommandState.REGISTRATION_WAIT_FOR_DATA);
             tgUser.setActive(false);
@@ -54,6 +59,7 @@ public class RegistrationCommand implements Command {
             }
             catch (BadUserDataException e) {
                 sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }
 
@@ -65,8 +71,7 @@ public class RegistrationCommand implements Command {
             }
             catch (RuntimeException e) {
                 sendMessage = new SendMessage(chatId, e.getMessage());
-                tgUser.setCommandSate(CommandState.REGISTRATION_WAIT_FOR_DATA);
-                telegramUserService.update(tgUser);
+                sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }
 
@@ -77,6 +82,7 @@ public class RegistrationCommand implements Command {
             telegramUserService.update(tgUser);
 
             sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Successfully signed up");
+            sendMessage.setReplyMarkup(defaultKeyboard(true));
             return;
         }
 
@@ -91,6 +97,15 @@ public class RegistrationCommand implements Command {
         }
 
         return split;
+    }
+
+    public static List<String> getNames() {
+        List<String> res = new ArrayList<>();
+        res.add("/registration");
+        res.add("registration");
+        res.add("sign up");
+
+        return res;
     }
 
     @Override

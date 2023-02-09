@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class LoginCommand implements Command {
     private SendMessage sendMessage;
@@ -33,6 +36,7 @@ public class LoginCommand implements Command {
         if (tgUser.getCommandSate() == CommandState.BASIC) {
             String text = "Enter your email and password.\n Use the following pattern: email password";
             sendMessage = new SendMessage(chatId, text);
+            sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
 
             tgUser.setCommandSate(CommandState.LOGIN_WAIT_FOR_DATA);
             tgUser.setActive(false);
@@ -47,6 +51,7 @@ public class LoginCommand implements Command {
             }
             catch (BadUserDataException e) {
                 sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }
 
@@ -60,8 +65,7 @@ public class LoginCommand implements Command {
             }
             catch (RuntimeException e) {
                 sendMessage = new SendMessage(chatId, e.getMessage());
-                tgUser.setCommandSate(CommandState.BASIC);
-                telegramUserService.update(tgUser);
+                sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }
 
@@ -72,6 +76,7 @@ public class LoginCommand implements Command {
             telegramUserService.update(tgUser);
 
             sendMessage = new SendMessage(chatId, "Successfully signed in");
+            sendMessage.setReplyMarkup(defaultKeyboard(true));
             return;
         }
 
@@ -86,6 +91,15 @@ public class LoginCommand implements Command {
         }
 
         return split;
+    }
+
+    public static List<String> getNames() {
+        List<String> res = new ArrayList<>();
+        res.add("/login");
+        res.add("login");
+        res.add("sign in");
+
+        return res;
     }
 
     @Override

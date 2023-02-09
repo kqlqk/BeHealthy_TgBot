@@ -50,22 +50,23 @@ public class UpdateServiceImpl implements UpdateService {
 
         TelegramUser tgUser = telegramUserService.getByTelegramId(tgId);
 
-        if (update.getMessage().getText().equals("/back")) {
+        if (BackCommand.getNames().contains(update.getMessage().getText().toLowerCase())) {
             return handleAndReturnSendObject(update, tgUser, "backCommand", BackCommand.class);
         }
-
-        if (!tgUser.isActive()) {
+        else if (!tgUser.isActive()) {
             return choosingForInactiveUsers(update, tgUser);
         }
-
-        if (tgUser.getCommandSate() != CommandState.BASIC) {
+        else if (tgUser.getCommandSate() != CommandState.BASIC) {
             return choosingBetweenCommandState(update, tgUser);
         }
-
-        return choosingBetweenCommands(update, tgUser);
+        else {
+            return choosingBetweenCommands(update, tgUser);
+        }
     }
 
     private Object choosingForInactiveUsers(Update update, TelegramUser tgUser) {
+        String userMessage = update.getMessage().getText().toLowerCase();
+
         switch (tgUser.getCommandSate()) {
             case LOGIN_WAIT_FOR_DATA:
                 return handleAndReturnSendObject(update, tgUser, "loginCommand", LoginCommand.class);
@@ -74,19 +75,19 @@ public class UpdateServiceImpl implements UpdateService {
                 return handleAndReturnSendObject(update, tgUser, "registrationCommand", RegistrationCommand.class);
         }
 
-        switch (update.getMessage().getText()) {
-            case "/start":
-                return handleAndReturnSendObject(update, tgUser, "startCommand", StartCommand.class);
-
-            case "/login":
-                return handleAndReturnSendObject(update, tgUser, "loginCommand", LoginCommand.class);
-
-            case "/registration":
-                return handleAndReturnSendObject(update, tgUser, "registrationCommand", RegistrationCommand.class);
-
-            default:
-                return handleAndReturnSendObject(update, tgUser, "defaultCommand", DefaultCommand.class);
+        if (StartCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "startCommand", StartCommand.class);
         }
+        else if (LoginCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "loginCommand", LoginCommand.class);
+        }
+        else if (RegistrationCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "registrationCommand", RegistrationCommand.class);
+        }
+        else {
+            return handleAndReturnSendObject(update, tgUser, "defaultCommand", DefaultCommand.class);
+        }
+
     }
 
     private Object choosingBetweenCommands(Update update, TelegramUser tgUser) {
