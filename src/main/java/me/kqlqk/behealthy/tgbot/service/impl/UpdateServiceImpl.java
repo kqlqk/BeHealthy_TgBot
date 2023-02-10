@@ -7,7 +7,7 @@ import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
 import me.kqlqk.behealthy.tgbot.service.UpdateService;
 import me.kqlqk.behealthy.tgbot.service.command.Command;
 import me.kqlqk.behealthy.tgbot.service.command.commands.BackCommand;
-import me.kqlqk.behealthy.tgbot.service.command.commands.guest.DefaultCommand;
+import me.kqlqk.behealthy.tgbot.service.command.commands.guest.DefaultGuestCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.guest.LoginCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.guest.RegistrationCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.guest.StartCommand;
@@ -85,7 +85,7 @@ public class UpdateServiceImpl implements UpdateService {
             return handleAndReturnSendObject(update, tgUser, "registrationCommand", RegistrationCommand.class);
         }
         else {
-            return handleAndReturnSendObject(update, tgUser, "defaultCommand", DefaultCommand.class);
+            return handleAndReturnSendObject(update, tgUser, "defaultGuestCommand", DefaultGuestCommand.class);
         }
 
     }

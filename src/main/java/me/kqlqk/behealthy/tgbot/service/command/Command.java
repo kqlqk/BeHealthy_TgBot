@@ -27,9 +27,21 @@ public interface Command {
         if (!userActive) {
             keyboardRow.add("Sign in");
             keyboardRow.add("Sign up");
+            keyboardRows.add(keyboardRow);
+        }
+        else {
+            keyboardRow.add("Kilocalories tracker \uD83D\uDC40");
+            keyboardRows.add(keyboardRow);
+
+            keyboardRow = new KeyboardRow();
+            keyboardRow.add("Workout service \uD83D\uDCAA");
+            keyboardRows.add(keyboardRow);
+
+            keyboardRow = new KeyboardRow();
+            keyboardRow.add("Your body condition \uD83D\uDE0E");
+            keyboardRows.add(keyboardRow);
         }
 
-        keyboardRows.add(keyboardRow);
         keyboard.setKeyboard(keyboardRows);
         keyboard.setResizeKeyboard(true);
         return keyboard;
