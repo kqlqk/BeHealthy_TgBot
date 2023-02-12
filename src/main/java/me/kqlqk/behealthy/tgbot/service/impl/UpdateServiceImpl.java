@@ -6,6 +6,7 @@ import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
 import me.kqlqk.behealthy.tgbot.service.UpdateService;
 import me.kqlqk.behealthy.tgbot.service.command.Command;
+import me.kqlqk.behealthy.tgbot.service.command.CommandState;
 import me.kqlqk.behealthy.tgbot.service.command.commands.BackCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.guest.DefaultGuestCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.guest.LoginCommand;
@@ -14,7 +15,10 @@ import me.kqlqk.behealthy.tgbot.service.command.commands.guest.StartCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.user.auth_service.MeCommand;
 import me.kqlqk.behealthy.tgbot.service.command.commands.user.condition_service.*;
 import me.kqlqk.behealthy.tgbot.service.command.commands.user.workout_service.*;
-import me.kqlqk.behealthy.tgbot.service.command.enums.CommandState;
+import me.kqlqk.behealthy.tgbot.service.command.kcals_tracker.KcalsTrackerMenu;
+import me.kqlqk.behealthy.tgbot.service.command.kcals_tracker.commands.AddFoodCommand;
+import me.kqlqk.behealthy.tgbot.service.command.kcals_tracker.commands.ChangeKcalsGoalCommand;
+import me.kqlqk.behealthy.tgbot.service.command.kcals_tracker.commands.GetFoodCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -91,15 +95,30 @@ public class UpdateServiceImpl implements UpdateService {
     }
 
     private Object choosingBetweenCommands(Update update, TelegramUser tgUser) {
+        String userMessage = update.getMessage().getText().toLowerCase();
+
+        if (KcalsTrackerMenu.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "kcalsTrackerMenu", KcalsTrackerMenu.class, new TokensDTO());
+        }
+
+        if (GetFoodCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "getFoodCommand", GetFoodCommand.class, new TokensDTO());
+        }
+
+        if (AddFoodCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "addFoodCommand", AddFoodCommand.class, new TokensDTO());
+        }
+
+        if (ChangeKcalsGoalCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "changeKcalsGoalCommand", ChangeKcalsGoalCommand.class, new TokensDTO());
+        }
+
         switch (update.getMessage().getText()) {
             case "/start":
                 return handleAndReturnSendObject(update, tgUser, "startCommand", StartCommand.class);
 
             case "/login":
                 return handleAndReturnSendObject(update, tgUser, "loginCommand", LoginCommand.class);
-
-            case "/registration":
-                return handleAndReturnSendObject(update, tgUser, "registrationCommand", RegistrationCommand.class);
 
             case "/me":
                 return handleAndReturnSendObject(update, tgUser, "meCommand", MeCommand.class, new TokensDTO());
@@ -119,12 +138,6 @@ public class UpdateServiceImpl implements UpdateService {
 
             case "/daily_kcals":
                 return handleAndReturnSendObject(update, tgUser, "dailyKcalsCommand", DailyKcalsCommand.class, new TokensDTO());
-
-            case "/add_food":
-                return handleAndReturnSendObject(update, tgUser, "addFoodCommand", AddFoodCommand.class, new TokensDTO());
-
-            case "/get_food":
-                return handleAndReturnSendObject(update, tgUser, "getFoodCommand", GetFoodCommand.class, new TokensDTO());
 
             case "/delete_food":
                 return handleAndReturnSendObject(update, tgUser, "deleteFoodCommand", DeleteFoodCommand.class, new TokensDTO());
@@ -196,6 +209,11 @@ public class UpdateServiceImpl implements UpdateService {
             case GET_EXERCISES_BY_MUSCLE_GROUP_WAIT_FOR_DATA:
                 return handleAndReturnSendObject(update, tgUser, "getExercisesByMuscleGroupCommand",
                                                  GetExercisesByMuscleGroupCommand.class, new TokensDTO());
+
+            case CHANGE_KCALS_GOAL_WAIT_FOR_CHOOSING:
+            case CHANGE_KCALS_GOAL_WAIT_FOR_DATA:
+                return handleAndReturnSendObject(update, tgUser, "changeKcalsGoalCommand", ChangeKcalsGoalCommand.class, new TokensDTO());
+
         }
 
         return null;
@@ -209,7 +227,7 @@ public class UpdateServiceImpl implements UpdateService {
 
         command.handle(update, tgUser);
 
-        return command.getSendMessage();
+        return command.getSendMessage() == null ? command.getSendMessages() : command.getSendMessage();
     }
 
     private <T> Object handleAndReturnSendObject(Update update,
@@ -221,6 +239,6 @@ public class UpdateServiceImpl implements UpdateService {
 
         command.handle(update, tgUser, tokensDTO, SecurityState.OK);
 
-        return command.getSendMessage();
+        return command.getSendMessage() == null ? command.getSendMessages() : command.getSendMessage();
     }
 }

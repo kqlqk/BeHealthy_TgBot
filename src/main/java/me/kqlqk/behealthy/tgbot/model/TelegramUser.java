@@ -3,7 +3,7 @@ package me.kqlqk.behealthy.tgbot.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import me.kqlqk.behealthy.tgbot.service.command.enums.CommandState;
+import me.kqlqk.behealthy.tgbot.service.command.CommandState;
 
 import javax.persistence.*;
 

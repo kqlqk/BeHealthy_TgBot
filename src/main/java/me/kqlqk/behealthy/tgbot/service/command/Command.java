@@ -53,7 +53,7 @@ public interface Command {
 
         KeyboardRow keyboardRow = new KeyboardRow();
 
-        keyboardRow.add("Back");
+        keyboardRow.add("Back ↩");
 
         keyboardRows.add(keyboardRow);
         keyboard.setKeyboard(keyboardRows);
@@ -62,5 +62,12 @@ public interface Command {
         return keyboard;
     }
 
-    SendMessage getSendMessage();
+    default SendMessage getSendMessage() {
+        return null;
+    }
+
+
+    default SendMessage[] getSendMessages() {
+        return null;
+    }
 }

@@ -79,4 +79,16 @@ public interface GatewayClient {
 
     @GetMapping("/api/v1/users/{id}/exercises")
     List<ExerciseDTO> getExercisesByMuscleGroup(@PathVariable long id, @RequestParam String muscleGroup, @RequestHeader String authorization);
+
+    @GetMapping("/api/v1/users/{id}/own/kcals")
+    OwnDailyKcalsDTO getOwnDailyKcalsByUserId(@PathVariable long id, @RequestHeader String authorization);
+
+    @PostMapping("/api/v1/users/{id}/own/kcals")
+    void createOwnDailyKcals(@PathVariable long id, OwnDailyKcalsDTO ownDailyKcalsDTO, @RequestHeader String authorization);
+
+    @PutMapping("/api/v1/users/{id}/own/kcals")
+    void updateOwnDailyKcals(@PathVariable long id, OwnDailyKcalsDTO ownDailyKcalsDTO, @RequestHeader String authorization);
+
+    @PutMapping("/api/v1/users/{id}/own/kcals/priority")
+    void changePriorityOwnDailyKcals(@PathVariable long id, @RequestBody OwnDailyKcalsDTO ownDailyKcalsDTO, @RequestHeader String authorization);
 }

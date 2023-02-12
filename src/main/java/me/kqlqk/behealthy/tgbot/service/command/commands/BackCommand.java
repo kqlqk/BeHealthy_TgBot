@@ -3,7 +3,8 @@ package me.kqlqk.behealthy.tgbot.service.command.commands;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
 import me.kqlqk.behealthy.tgbot.service.command.Command;
-import me.kqlqk.behealthy.tgbot.service.command.enums.CommandState;
+import me.kqlqk.behealthy.tgbot.service.command.CommandState;
+import me.kqlqk.behealthy.tgbot.service.command.kcals_tracker.KcalsTrackerMenu;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -24,18 +25,32 @@ public class BackCommand implements Command {
     public void handle(Update update, TelegramUser tgUser) {
         String chatId = update.getMessage().getChatId().toString();
 
-        if (tgUser.getCommandSate() != CommandState.BASIC) {
-            tgUser.setCommandSate(CommandState.BASIC);
-            telegramUserService.update(tgUser);
+        sendMessage = new SendMessage(chatId, "Ok");
+
+        switch (tgUser.getCommandSate()) {
+            case ADD_FOOD_WAIT_FOR_DATA:
+            case CHANGE_KCALS_GOAL_WAIT_FOR_CHOOSING:
+            case CHANGE_KCALS_GOAL_WAIT_FOR_DATA:
+                sendMessage.setReplyMarkup(KcalsTrackerMenu.initKeyboard());
+                break;
+
+            default:
+                sendMessage.setReplyMarkup(defaultKeyboard(tgUser.isActive()));
+                break;
         }
 
-        sendMessage = new SendMessage(chatId, "Ok");
-        sendMessage.setReplyMarkup(defaultKeyboard(tgUser.isActive()));
+        if (tgUser.getCommandSate() == CommandState.BASIC) {
+            return;
+        }
+
+        tgUser.setCommandSate(CommandState.BASIC);
+        telegramUserService.update(tgUser);
     }
 
     public static List<String> getNames() {
         List<String> res = new ArrayList<>();
         res.add("/back");
+        res.add("back ↩");
         res.add("back");
 
         return res;

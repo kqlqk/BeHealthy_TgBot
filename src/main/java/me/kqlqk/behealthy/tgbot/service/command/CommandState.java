@@ -1,4 +1,4 @@
-package me.kqlqk.behealthy.tgbot.service.command.enums;
+package me.kqlqk.behealthy.tgbot.service.command;
 
 public enum CommandState {
     BASIC,
@@ -27,5 +27,8 @@ public enum CommandState {
 
     GET_EXERCISE_BY_NAME_WAIT_FOR_DATA,
 
-    GET_EXERCISES_BY_MUSCLE_GROUP_WAIT_FOR_DATA
+    GET_EXERCISES_BY_MUSCLE_GROUP_WAIT_FOR_DATA,
+
+    CHANGE_KCALS_GOAL_WAIT_FOR_CHOOSING,
+    CHANGE_KCALS_GOAL_WAIT_FOR_DATA
 }
