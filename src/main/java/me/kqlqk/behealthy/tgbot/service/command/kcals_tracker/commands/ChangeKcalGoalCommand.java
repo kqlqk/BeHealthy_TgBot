@@ -101,6 +101,13 @@ public class ChangeKcalGoalCommand extends Command {
                         telegramUserService.update(tgUser);
                         return;
                     }
+
+                    sendMessage = new SendMessage(chatId, "Done. \n" +
+                            "If you want to update it, you should update your body condition");
+                    sendMessage.setReplyMarkup(KcalsTrackerMenu.initKeyboard());
+                    tgUser.setCommandSate(CommandState.BASIC);
+                    telegramUserService.update(tgUser);
+                    return;
                 }
 
                 GetUserConditionDTO getUserConditionDTO = null;
