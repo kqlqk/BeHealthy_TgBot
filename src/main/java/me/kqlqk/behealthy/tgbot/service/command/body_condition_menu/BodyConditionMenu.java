@@ -1,4 +1,4 @@
-package me.kqlqk.behealthy.tgbot.service.command.kcals_tracker;
+package me.kqlqk.behealthy.tgbot.service.command.body_condition_menu;
 
 import me.kqlqk.behealthy.tgbot.aop.SecurityCheck;
 import me.kqlqk.behealthy.tgbot.aop.SecurityState;
@@ -7,7 +7,6 @@ import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
 import me.kqlqk.behealthy.tgbot.service.command.Command;
 import me.kqlqk.behealthy.tgbot.service.command.CommandState;
-import me.kqlqk.behealthy.tgbot.service.command.kcals_tracker.commands.GetFoodCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
@@ -21,16 +20,14 @@ import java.util.List;
 
 @Service
 @Scope("prototype")
-public class KcalsTrackerMenu implements Command {
+public class BodyConditionMenu implements Command {
     private SendMessage sendMessage;
 
     private final TelegramUserService telegramUserService;
-    private final GetFoodCommand getFoodCommand;
 
     @Autowired
-    public KcalsTrackerMenu(TelegramUserService telegramUserService, GetFoodCommand getFoodCommand) {
+    public BodyConditionMenu(TelegramUserService telegramUserService) {
         this.telegramUserService = telegramUserService;
-        this.getFoodCommand = getFoodCommand;
     }
 
     @SecurityCheck
@@ -49,11 +46,8 @@ public class KcalsTrackerMenu implements Command {
             return;
         }
 
-        getFoodCommand.handle(update, tgUser, accessTokenDTO, securityState);
-        sendMessage = getFoodCommand.getSendMessage();
-        if (sendMessage.getReplyMarkup() == null) {
-            sendMessage.setReplyMarkup(initKeyboard());
-        }
+        sendMessage = new SendMessage(chatId, "Choose one of the following menu item");
+        sendMessage.setReplyMarkup(initKeyboard());
     }
 
     public static ReplyKeyboardMarkup initKeyboard() {
@@ -61,15 +55,11 @@ public class KcalsTrackerMenu implements Command {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
         KeyboardRow keyboardRow = new KeyboardRow();
-        keyboardRow.add("Add food ➕");
+        keyboardRow.add("Body condition \uD83D\uDD76");
         keyboardRows.add(keyboardRow);
 
         keyboardRow = new KeyboardRow();
-        keyboardRow.add("Get today's food \uD83D\uDD3D");
-        keyboardRows.add(keyboardRow);
-
-        keyboardRow = new KeyboardRow();
-        keyboardRow.add("Change kilocalories goal ⚙");
+        keyboardRow.add("Tracking my changes \uD83D\uDCC8");
         keyboardRows.add(keyboardRow);
 
         keyboardRow = new KeyboardRow();
@@ -83,9 +73,9 @@ public class KcalsTrackerMenu implements Command {
 
     public static List<String> getNames() {
         List<String> res = new ArrayList<>();
-        res.add("kilocalories tracker \uD83D\uDC40");
-        res.add("kilocalories tracker");
-        res.add("kilocalories menu");
+        res.add("my body \uD83D\uDE0E");
+        res.add("my body");
+        res.add("body menu");
 
         return res;
     }

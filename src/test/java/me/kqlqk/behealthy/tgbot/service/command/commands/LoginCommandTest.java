@@ -1,13 +1,13 @@
 package me.kqlqk.behealthy.tgbot.service.command.commands;
 
 import annotations.ServiceTest;
+import me.kqlqk.behealthy.tgbot.dto.auth_service.LoginDTO;
 import me.kqlqk.behealthy.tgbot.dto.auth_service.TokensDTO;
-import me.kqlqk.behealthy.tgbot.dto.auth_service.UserDTO;
 import me.kqlqk.behealthy.tgbot.feign.GatewayClient;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
 import me.kqlqk.behealthy.tgbot.service.command.CommandState;
-import me.kqlqk.behealthy.tgbot.service.command.commands.guest.LoginCommand;
+import me.kqlqk.behealthy.tgbot.service.command.guest_menu.LoginCommand;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -59,10 +59,8 @@ public class LoginCommandTest {
         when(message.getText()).thenReturn("email pswd");
         when(message.getChatId()).thenReturn(1L);
 
-        UserDTO userDTO = new UserDTO();
-        userDTO.setEmail("email");
-        userDTO.setPassword("pswd");
-        when(gatewayClient.logInUser(userDTO)).thenReturn(new TokensDTO(2, "access", "refresh"));
+        LoginDTO loginDTO = new LoginDTO("email", "pswd");
+        when(gatewayClient.logInUser(loginDTO)).thenReturn(new TokensDTO(2, "access", "refresh"));
 
         loginCommand.handle(update, telegramUserService.getByTelegramId(1));
 

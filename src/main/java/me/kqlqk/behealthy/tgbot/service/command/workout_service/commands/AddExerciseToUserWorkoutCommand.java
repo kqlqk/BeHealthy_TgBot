@@ -1,16 +1,16 @@
-package me.kqlqk.behealthy.tgbot.service.command.kcals_tracker.commands;
+package me.kqlqk.behealthy.tgbot.service.command.workout_service.commands;
 
+import lombok.extern.slf4j.Slf4j;
 import me.kqlqk.behealthy.tgbot.aop.SecurityCheck;
 import me.kqlqk.behealthy.tgbot.aop.SecurityState;
 import me.kqlqk.behealthy.tgbot.dto.auth_service.AccessTokenDTO;
-import me.kqlqk.behealthy.tgbot.dto.condition_service.AddDailyAteFoodDTO;
+import me.kqlqk.behealthy.tgbot.dto.workout_service.AddUserWorkoutDTO;
 import me.kqlqk.behealthy.tgbot.exception.BadUserDataException;
 import me.kqlqk.behealthy.tgbot.feign.GatewayClient;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
 import me.kqlqk.behealthy.tgbot.service.command.Command;
 import me.kqlqk.behealthy.tgbot.service.command.CommandState;
-import me.kqlqk.behealthy.tgbot.service.command.kcals_tracker.KcalsTrackerMenu;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
@@ -22,19 +22,20 @@ import java.util.List;
 
 @Service
 @Scope("prototype")
-public class AddFoodCommand implements Command {
-    private final List<SendMessage> sendMessages;
+@Slf4j
+public class AddExerciseToUserWorkoutCommand implements Command {
     private SendMessage sendMessage;
+    private final List<SendMessage> sendMessages;
 
     private final TelegramUserService telegramUserService;
     private final GatewayClient gatewayClient;
-    private final GetFoodCommand getFoodCommand;
+    private final GetUserWorkoutCommand getUserWorkoutCommand;
 
     @Autowired
-    public AddFoodCommand(TelegramUserService telegramUserService, GatewayClient gatewayClient, GetFoodCommand getFoodCommand) {
+    public AddExerciseToUserWorkoutCommand(TelegramUserService telegramUserService, GatewayClient gatewayClient, GetUserWorkoutCommand getUserWorkoutCommand) {
         this.telegramUserService = telegramUserService;
         this.gatewayClient = gatewayClient;
-        this.getFoodCommand = getFoodCommand;
+        this.getUserWorkoutCommand = getUserWorkoutCommand;
         sendMessages = new ArrayList<>();
     }
 
@@ -55,20 +56,20 @@ public class AddFoodCommand implements Command {
             return;
         }
 
-        if (tgUser.getCommandSate() == CommandState.BASIC) {
-            String text = "Let's add food that you are going to eat or have already eaten." +
-                    "\nUse the following pattern: name weight(in g.) protein(per 100 g.) fat(per 100 g.) carb(per 100 g.)";
+        if (tgUser.getCommandSate() == CommandState.BASIC || tgUser.getCommandSate() == CommandState.RETURN_TO_WORKOUT_SERVICE_MENU) {
+            String text = "Let's add your exercise to plan\n" +
+                    "Use the following pattern: 'Day of the week (from 1 to 7) 'exercise order' 'exercise name' reps sets";
             sendMessage = new SendMessage(chatId, text);
             sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
 
-            tgUser.setCommandSate(CommandState.ADD_FOOD_WAIT_FOR_DATA);
+            tgUser.setCommandSate(CommandState.ADD_EXERCISE_WAIT_FOR_DATA);
             telegramUserService.update(tgUser);
         }
-        else if (tgUser.getCommandSate() == CommandState.ADD_FOOD_WAIT_FOR_DATA) {
-            String[] food;
+        else if (tgUser.getCommandSate() == CommandState.ADD_EXERCISE_WAIT_FOR_DATA) {
+            String[] data;
 
             try {
-                food = splitFood(userMessage);
+                data = split(userMessage);
             }
             catch (BadUserDataException e) {
                 sendMessage = new SendMessage(chatId, e.getMessage());
@@ -76,14 +77,15 @@ public class AddFoodCommand implements Command {
                 return;
             }
 
-            AddDailyAteFoodDTO addDailyAteFoodDTO = new AddDailyAteFoodDTO(food[0],
-                                                                           Double.parseDouble(food[1]),
-                                                                           Integer.parseInt(food[2]),
-                                                                           Integer.parseInt(food[3]),
-                                                                           Integer.parseInt(food[4]));
+            AddUserWorkoutDTO addUserWorkoutDTO = new AddUserWorkoutDTO();
+            addUserWorkoutDTO.setDay(Integer.parseInt(data[0]));
+            addUserWorkoutDTO.setNumberPerDay(Integer.parseInt(data[1]));
+            addUserWorkoutDTO.setExerciseName(data[2]);
+            addUserWorkoutDTO.setRep(Integer.parseInt(data[3]));
+            addUserWorkoutDTO.setSet(Integer.parseInt(data[4]));
 
             try {
-                gatewayClient.saveDailyAteFood(tgUser.getUserId(), addDailyAteFoodDTO, accessTokenDTO.getAccessToken());
+                gatewayClient.addExerciseToUserWorkout(tgUser.getUserId(), addUserWorkoutDTO, accessTokenDTO.getAccessToken());
             }
             catch (RuntimeException e) {
                 sendMessage = new SendMessage(chatId, e.getMessage());
@@ -94,61 +96,59 @@ public class AddFoodCommand implements Command {
             tgUser.setCommandSate(CommandState.BASIC);
             telegramUserService.update(tgUser);
 
-            SendMessage sendMessage1 = new SendMessage(chatId, "Food was successfully added");
-            sendMessage1.setReplyMarkup(KcalsTrackerMenu.initKeyboard());
+            getUserWorkoutCommand.handle(update, tgUser, accessTokenDTO, securityState);
 
-            getFoodCommand.handle(update, tgUser, accessTokenDTO, securityState);
-            SendMessage sendMessage2 = getFoodCommand.getSendMessage();
-            sendMessage2.setReplyMarkup(KcalsTrackerMenu.initKeyboard());
-
+            SendMessage sendMessage1 = new SendMessage(chatId, "Successfully");
+            SendMessage sendMessage2 = getUserWorkoutCommand.getSendMessage();
+            sendMessage2.setReplyMarkup(GetUserWorkoutCommand.initKeyboard());
             sendMessages.add(sendMessage1);
             sendMessages.add(sendMessage2);
         }
     }
 
-    private String[] splitFood(String data) {
-        String[] split = data.split(" ");
+    private String[] split(String userMessage) {
+        String[] data = userMessage.split(" ");
 
-        if (split.length < 5) {
-            throw new BadUserDataException("Please, use the following pattern: name weight(in g.) protein(per 100 g.) fat(per 100 g.) carb(per 100 g.)");
-        }
-
-        try {
-            Double.parseDouble(split[1]);
-        }
-        catch (NumberFormatException e) {
-            throw new BadUserDataException("For 'weight' was not provided a number");
+        if (data.length < 5) {
+            throw new BadUserDataException("Please, use the following pattern: 'day of the week (from 1 to 7) 'exercise order' 'exercise name' reps sets");
         }
 
         try {
-            Integer.parseInt(split[2]);
+            Integer.parseInt(data[0]);
         }
         catch (NumberFormatException e) {
-            throw new BadUserDataException("For 'protein' was not provided a number");
+            throw new BadUserDataException("For 'day of the week' was not provided a number");
         }
 
         try {
-            Integer.parseInt(split[3]);
+            Integer.parseInt(data[1]);
         }
         catch (NumberFormatException e) {
-            throw new BadUserDataException("For 'fat' was not provided a number");
+            throw new BadUserDataException("For 'exercise order' was not provided a number");
         }
 
         try {
-            Integer.parseInt(split[4]);
+            Integer.parseInt(data[3]);
         }
         catch (NumberFormatException e) {
-            throw new BadUserDataException("For 'carb' was not provided a number");
+            throw new BadUserDataException("For 'reps' was not provided a number");
         }
 
-        return split;
+        try {
+            Integer.parseInt(data[4]);
+        }
+        catch (NumberFormatException e) {
+            throw new BadUserDataException("For 'sets' was not provided a number");
+        }
+
+        return data;
     }
 
     public static List<String> getNames() {
         List<String> res = new ArrayList<>();
-        res.add("/add_food");
-        res.add("add food ➕");
-        res.add("add food");
+        res.add("add exercise");
+        res.add("add the first exercise");
+        res.add("/add_exercise");
 
         return res;
     }
@@ -163,3 +163,4 @@ public class AddFoodCommand implements Command {
         return sendMessages.toArray(new SendMessage[sendMessages.size()]);
     }
 }
+

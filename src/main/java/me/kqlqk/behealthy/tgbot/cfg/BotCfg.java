@@ -44,6 +44,7 @@ public class BotCfg extends TelegramLongPollingBot {
         }
         catch (TelegramApiException e) {
             log.error("Something went wrong: ", e);
+
             throw new RuntimeException(e);
         }
     }
@@ -54,21 +55,6 @@ public class BotCfg extends TelegramLongPollingBot {
         botCommands.add(new BotCommand("/login", "Sign in"));
         botCommands.add(new BotCommand("/registration", "Sign up"));
         botCommands.add(new BotCommand("/me", "Information about your account"));
-        botCommands.add(new BotCommand("/get_condition", "Get your body condition"));
-        botCommands.add(new BotCommand("/set_condition", "Add your body condition"));
-        botCommands.add(new BotCommand("/set_condition_no_fat_percent", "Add your body condition if you don't know your body fat percent"));
-        botCommands.add(new BotCommand("/update_condition", "Update your body condition"));
-        botCommands.add(new BotCommand("/daily_kcals", "Get your daily kcals"));
-        botCommands.add(new BotCommand("/add_food", "Add your food for tracking"));
-        botCommands.add(new BotCommand("/get_food", "Get your ate food"));
-        botCommands.add(new BotCommand("/delete_food", "Delete your ate food"));
-        botCommands.add(new BotCommand("/create_workout", "Create your workout plan"));
-        botCommands.add(new BotCommand("/get_workout", "Get your workout plan"));
-        botCommands.add(new BotCommand("/update_workout", "Update your workout plan"));
-        botCommands.add(new BotCommand("/update_workout_by_alternative", "Update your workout plan by alternative exercise"));
-        botCommands.add(new BotCommand("/get_exercise_by_name", "Get exercise by name"));
-        botCommands.add(new BotCommand("/get_exercises_by_muscle_group", "Get exercise by muscle group"));
-        botCommands.add(new BotCommand("/change_kcals_goal", "Change kilocalories goal"));
     }
 
 

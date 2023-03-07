@@ -20,6 +20,10 @@ public class TelegramUserServiceImpl implements TelegramUserService {
 
     @Override
     public TelegramUser getByTelegramId(long telegramId) {
+        if (!existsByTelegramId(telegramId)) {
+            throw new TelegramUserNotFoundException("TelegramUser with telegramId = " + telegramId + " not found");
+        }
+
         return telegramUserRepository.getByTelegramId(telegramId);
     }
 

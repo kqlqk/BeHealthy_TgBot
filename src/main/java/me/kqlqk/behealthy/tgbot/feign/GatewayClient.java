@@ -1,12 +1,10 @@
 package me.kqlqk.behealthy.tgbot.feign;
 
-import me.kqlqk.behealthy.tgbot.dto.auth_service.TokensDTO;
-import me.kqlqk.behealthy.tgbot.dto.auth_service.UserDTO;
+import me.kqlqk.behealthy.tgbot.dto.ValidateDTO;
+import me.kqlqk.behealthy.tgbot.dto.auth_service.*;
 import me.kqlqk.behealthy.tgbot.dto.condition_service.*;
-import me.kqlqk.behealthy.tgbot.dto.workout_dto.ExerciseDTO;
-import me.kqlqk.behealthy.tgbot.dto.workout_dto.WorkoutInfoDTO;
+import me.kqlqk.behealthy.tgbot.dto.workout_service.*;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,80 +13,73 @@ import java.util.List;
 public interface GatewayClient {
 
     @PostMapping("/api/v1/login")
-    TokensDTO logInUser(@RequestBody UserDTO userDTO);
+    TokensDTO logInUser(@RequestBody LoginDTO loginDTO);
 
     @PostMapping("/api/v1/registration")
-    TokensDTO createUser(@RequestBody UserDTO userDTO);
+    TokensDTO createUser(@RequestBody RegistrationDTO registrationDTO);
 
     @GetMapping("/api/v1/users/{id}")
-    UserDTO getUser(@PathVariable long id, @RequestHeader String authorization);
+    GetUserDTO getUser(@PathVariable long id, @RequestHeader String authorization);
 
     @PostMapping("/api/v1/access")
-    TokensDTO getNewAccessToken(@RequestBody TokensDTO tokensDTO);
+    AccessTokenDTO getNewAccessToken(@RequestBody RefreshTokenDTO refreshTokenDTO);
 
-    @PostMapping("/api/v1/update")
-    TokensDTO updateTokens(@RequestBody TokensDTO tokensDTO);
+    @PostMapping("/api/v1/refresh/validate")
+    ValidateDTO validateRefreshToken(@RequestBody RefreshTokenDTO refreshTokenDTO);
 
 
     @GetMapping("/api/v1/users/{id}/condition")
-    UserConditionDTO getUserCondition(@PathVariable long id, @RequestHeader String authorization);
+    GetUserConditionDTO getUserCondition(@PathVariable long id, @RequestHeader String authorization);
 
     @PostMapping("/api/v1/users/{id}/condition")
-    void createUserCondition(@PathVariable long id, @RequestBody UserConditionDTO userConditionDTO, @RequestHeader String authorization);
-
-    @PostMapping("/api/v1/users/{id}/condition/male/fatPercent")
-    void createUserConditionWithoutFatPercentMale(@PathVariable long id,
-                                                  @RequestBody UserConditionWithoutFatPercentMaleDTO userConditionWithoutFatPercentMaleDTO,
-                                                  @RequestHeader String authorization);
-
-    @PostMapping("/api/v1/users/{id}/condition/female/fatPercent")
-    void createUserConditionWithoutFatPercentFemale(@PathVariable long id,
-                                                    @RequestBody UserConditionWithoutFatPercentFemaleDTO userConditionWithoutFatPercentFemaleDTO,
-                                                    @RequestHeader String authorization);
+    void createUserCondition(@PathVariable long id, @RequestBody AddUpdateUserConditionDTO addConditionDTO, @RequestHeader String authorization);
 
     @PutMapping("/api/v1/users/{id}/condition")
-    ResponseEntity<?> updateUserCondition(@PathVariable long id, @RequestBody UserConditionDTO userConditionDTO, @RequestHeader String authorization);
-
-    @GetMapping("/api/v1/users/{id}/kcals")
-    DailyKcalsDTO getUserDailyKcals(@PathVariable long id, @RequestHeader String authorization);
-
-    @PostMapping("/api/v1/users/{id}/food")
-    void addDailyAteFoods(@PathVariable long id, @RequestBody DailyAteFoodDTO dailyAteFoodDTO, @RequestHeader String authorization);
+    void updateUserCondition(@PathVariable long id, @RequestBody AddUpdateUserConditionDTO updateConditionDTO, @RequestHeader String authorization);
 
     @GetMapping("/api/v1/users/{id}/food")
-    List<DailyAteFoodDTO> getDailyAteFoods(@PathVariable long id, @RequestHeader String authorization);
+    List<GetDailyAteFoodDTO> getDailyAteFoods(@PathVariable long id, @RequestHeader String authorization);
+
+    @PostMapping("/api/v1/users/{id}/food")
+    void saveDailyAteFood(@PathVariable long id, @RequestBody AddDailyAteFoodDTO addDailyAteFoodDTO, @RequestHeader String authorization);
 
     @DeleteMapping("/api/v1/users/{id}/food")
     void deleteDailyAteFood(@PathVariable long id, @RequestParam long productId, @RequestHeader String authorization);
 
+    @GetMapping("/api/v1/users/{id}/kcal")
+    GetUserKcalDTO getUserKcal(@PathVariable long id, @RequestHeader String authorization);
 
-    @PostMapping("/api/v1/users/{id}/workout")
-    void createWorkout(@PathVariable long id, @RequestBody WorkoutInfoDTO workoutInfoDTO, @RequestHeader String authorization);
+    @PostMapping("/api/v1/users/{id}/kcal")
+    void addUserKcal(@PathVariable long id, @RequestBody AddUpdateUserKcalDTO addUserKcalDTO, @RequestHeader String authorization);
+
+    @PutMapping("/api/v1/users/{id}/kcal")
+    void updateUserKcal(@PathVariable long id, @RequestBody AddUpdateUserKcalDTO updateUserKcalDTO, @RequestHeader String authorization);
+
 
     @GetMapping("/api/v1/users/{id}/workout")
-    List<WorkoutInfoDTO> getWorkout(@PathVariable long id, @RequestHeader String authorization);
+    List<GetWorkoutInfoDTO> getWorkoutInfos(@PathVariable long id, @RequestHeader String authorization);
+
+    @PostMapping("/api/v1/users/{id}/workout")
+    void createWorkoutInfos(@PathVariable long id, @RequestBody AddUpdateWorkoutInfoDTO addWorkoutInfoDTO, @RequestHeader String authorization);
 
     @PutMapping("/api/v1/users/{id}/workout")
-    void updateWorkout(@PathVariable long id, @RequestBody WorkoutInfoDTO workoutInfoDTO, @RequestHeader String authorization);
+    void updateWorkoutInfos(@PathVariable long id, @RequestBody AddUpdateWorkoutInfoDTO updateWorkoutInfoDTO, @RequestHeader String authorization);
 
     @PutMapping("/api/v1/users/{id}/workout/alternative")
-    void updateWorkoutWithAlternativeExercise(@PathVariable long id, @RequestParam String exercise, @RequestHeader String authorization);
+    void updateWorkoutWithAlternativeExercise(@PathVariable long id, @RequestParam String exerciseName, @RequestHeader String authorization);
 
     @GetMapping("/api/v1/users/{id}/exercises")
-    ExerciseDTO getExercisesByName(@PathVariable long id, @RequestParam String name, @RequestHeader String authorization);
+    GetExerciseDTO getExercisesByName(@PathVariable long id, @RequestParam String name, @RequestHeader String authorization);
 
     @GetMapping("/api/v1/users/{id}/exercises")
-    List<ExerciseDTO> getExercisesByMuscleGroup(@PathVariable long id, @RequestParam String muscleGroup, @RequestHeader String authorization);
+    List<GetExerciseDTO> getExercisesByMuscleGroup(@PathVariable long id, @RequestParam String muscleGroup, @RequestHeader String authorization);
 
-    @GetMapping("/api/v1/users/{id}/own/kcals")
-    OwnDailyKcalsDTO getOwnDailyKcalsByUserId(@PathVariable long id, @RequestHeader String authorization);
+    @GetMapping("/api/v1/users/{id}/workout/user")
+    List<GetUserWorkoutDTO> getUserWorkout(@PathVariable long id, @RequestHeader String authorization);
 
-    @PostMapping("/api/v1/users/{id}/own/kcals")
-    void createOwnDailyKcals(@PathVariable long id, OwnDailyKcalsDTO ownDailyKcalsDTO, @RequestHeader String authorization);
+    @PostMapping("/api/v1/users/{id}/workout/user")
+    void addExerciseToUserWorkout(@PathVariable long id, @RequestBody AddUserWorkoutDTO addUserWorkoutDTO, @RequestHeader String authorization);
 
-    @PutMapping("/api/v1/users/{id}/own/kcals")
-    void updateOwnDailyKcals(@PathVariable long id, OwnDailyKcalsDTO ownDailyKcalsDTO, @RequestHeader String authorization);
-
-    @PutMapping("/api/v1/users/{id}/own/kcals/priority")
-    void changePriorityOwnDailyKcals(@PathVariable long id, @RequestBody OwnDailyKcalsDTO ownDailyKcalsDTO, @RequestHeader String authorization);
+    @DeleteMapping("/api/v1/users/{id}/workout/user")
+    void removeExercise(@PathVariable long id, @RequestParam String exerciseName, @RequestHeader String authorization);
 }

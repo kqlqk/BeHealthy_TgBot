@@ -1,13 +1,13 @@
 package me.kqlqk.behealthy.tgbot.service.command.commands;
 
 import annotations.ServiceTest;
+import me.kqlqk.behealthy.tgbot.dto.auth_service.RegistrationDTO;
 import me.kqlqk.behealthy.tgbot.dto.auth_service.TokensDTO;
-import me.kqlqk.behealthy.tgbot.dto.auth_service.UserDTO;
 import me.kqlqk.behealthy.tgbot.feign.GatewayClient;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
 import me.kqlqk.behealthy.tgbot.service.command.CommandState;
-import me.kqlqk.behealthy.tgbot.service.command.commands.guest.RegistrationCommand;
+import me.kqlqk.behealthy.tgbot.service.command.guest_menu.RegistrationCommand;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -61,8 +61,8 @@ public class RegistrationCommandTest {
         when(update.getMessage()).thenReturn(message);
         when(message.getChatId()).thenReturn(1L);
         when(message.getText()).thenReturn("email name pswd");
-        UserDTO userDTO = new UserDTO("email", "name", "pswd");
-        when(gatewayClient.createUser(userDTO)).thenReturn(new TokensDTO(null, "refresh"));
+        RegistrationDTO registrationDTO = new RegistrationDTO("email", "name", "pswd");
+        when(gatewayClient.createUser(registrationDTO)).thenReturn(new TokensDTO(null, "refresh"));
 
         TelegramUser tgUser = new TelegramUser();
         tgUser.setTelegramId(2);

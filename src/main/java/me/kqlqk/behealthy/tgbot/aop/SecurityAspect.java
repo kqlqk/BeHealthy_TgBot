@@ -1,7 +1,8 @@
 package me.kqlqk.behealthy.tgbot.aop;
 
 import lombok.extern.slf4j.Slf4j;
-import me.kqlqk.behealthy.tgbot.dto.auth_service.TokensDTO;
+import me.kqlqk.behealthy.tgbot.dto.auth_service.AccessTokenDTO;
+import me.kqlqk.behealthy.tgbot.dto.auth_service.RefreshTokenDTO;
 import me.kqlqk.behealthy.tgbot.exception.BadUserDataException;
 import me.kqlqk.behealthy.tgbot.exception.NoRightsException;
 import me.kqlqk.behealthy.tgbot.feign.GatewayClient;
@@ -31,7 +32,7 @@ public class SecurityAspect {
 
 
     @Before("@annotation(SecurityCheck)")
-    private void beforeCheckUserIdAnnotation(JoinPoint joinPoint) {
+    private void checkUserRights(JoinPoint joinPoint) {
         Update update = null;
 
         for (Object arg : joinPoint.getArgs()) {
@@ -40,20 +41,27 @@ public class SecurityAspect {
                 break;
             }
             else {
-                throw new IllegalArgumentException("Class instance of Update not found");
+                IllegalArgumentException e = new IllegalArgumentException("Class instance of Update not found");
+
+                log.error("Update not found", e);
+
+                throw e;
             }
         }
 
         TelegramUser tgUser = telegramUserService.getByTelegramId(update.getMessage().getFrom().getId());
 
         if (!tgUserAndFieldsNotNull(tgUser)) {
-            log.warn("User with telegramId = " + tgUser.getTelegramId() + " tried to get access (beforeCheckUserIdAnnotation)");
-            throw new NoRightsException("You have no rights to do this");
+            NoRightsException e = new NoRightsException("You have no rights to do this");
+
+            log.warn("Bad telegram user", e);
+
+            throw e;
         }
     }
 
     @Around("@annotation(SecurityCheck)")
-    private void setAccessTokenToMethod(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+    private void setAccessTokenAndSecurityStateToMethod(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         TelegramUser tgUser = null;
 
         for (Object arg : proceedingJoinPoint.getArgs()) {
@@ -72,12 +80,12 @@ public class SecurityAspect {
 
         int indexForTokens = 0;
         int indexForSecurityState = 0;
-        boolean hasTokensDTO = false;
+        boolean hasAccessTokenDTO = false;
         boolean hasSecurityState = false;
 
         for (Object arg : proceedingJoinPoint.getArgs()) {
-            if (arg instanceof TokensDTO) {
-                hasTokensDTO = true;
+            if (arg instanceof AccessTokenDTO) {
+                hasAccessTokenDTO = true;
                 break;
             }
             indexForTokens++;
@@ -91,10 +99,11 @@ public class SecurityAspect {
             indexForSecurityState++;
         }
 
-        if (hasTokensDTO) {
-            TokensDTO refreshTokenDTO = new TokensDTO(0, null, tgUser.getRefreshToken());
+        if (hasAccessTokenDTO) {
+            RefreshTokenDTO refreshTokenDTO = new RefreshTokenDTO();
+            refreshTokenDTO.setRefreshToken(tgUser.getRefreshToken());
 
-            TokensDTO accessTokenDTO;
+            AccessTokenDTO accessTokenDTO;
             try {
                 accessTokenDTO = gatewayClient.getNewAccessToken(refreshTokenDTO);
                 accessTokenDTO.setAccessToken("Bearer " + accessTokenDTO.getAccessToken());
@@ -110,11 +119,13 @@ public class SecurityAspect {
                     throw e;
                 }
             }
+            proceedingJoinPoint.proceed(modifiedArgs);
+        }
+        else {
+            log.error("AccessTokenDTO not found");
+            throw new IllegalArgumentException("AccessTokenDTO not found");
         }
 
-        proceedingJoinPoint.proceed(modifiedArgs);
-
-        log.info("User with userId = " + tgUser.getUserId() + " got access (setAccessTokenToMethod)");
     }
 
     private boolean tgUserAndFieldsNotNull(TelegramUser tgUser) {

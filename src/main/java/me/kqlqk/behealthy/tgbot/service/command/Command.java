@@ -1,7 +1,7 @@
 package me.kqlqk.behealthy.tgbot.service.command;
 
 import me.kqlqk.behealthy.tgbot.aop.SecurityState;
-import me.kqlqk.behealthy.tgbot.dto.auth_service.TokensDTO;
+import me.kqlqk.behealthy.tgbot.dto.auth_service.AccessTokenDTO;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -15,7 +15,7 @@ public interface Command {
     default void handle(Update update, TelegramUser tgUser) {
     }
 
-    default void handle(Update update, TelegramUser tgUser, TokensDTO tokensDTO, SecurityState securityState) {
+    default void handle(Update update, TelegramUser tgUser, AccessTokenDTO accessTokenDTO, SecurityState securityState) {
     }
 
     default ReplyKeyboardMarkup defaultKeyboard(boolean userActive) {
@@ -38,7 +38,7 @@ public interface Command {
             keyboardRows.add(keyboardRow);
 
             keyboardRow = new KeyboardRow();
-            keyboardRow.add("Your body condition \uD83D\uDE0E");
+            keyboardRow.add("My body \uD83D\uDE0E");
             keyboardRows.add(keyboardRow);
         }
 

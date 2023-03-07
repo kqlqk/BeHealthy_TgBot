@@ -1,39 +1,50 @@
 package me.kqlqk.behealthy.tgbot.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import me.kqlqk.behealthy.tgbot.aop.SecurityState;
-import me.kqlqk.behealthy.tgbot.dto.auth_service.TokensDTO;
+import me.kqlqk.behealthy.tgbot.dto.ValidateDTO;
+import me.kqlqk.behealthy.tgbot.dto.auth_service.AccessTokenDTO;
+import me.kqlqk.behealthy.tgbot.dto.auth_service.RefreshTokenDTO;
+import me.kqlqk.behealthy.tgbot.feign.GatewayClient;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
 import me.kqlqk.behealthy.tgbot.service.UpdateService;
+import me.kqlqk.behealthy.tgbot.service.command.BackCommand;
 import me.kqlqk.behealthy.tgbot.service.command.Command;
 import me.kqlqk.behealthy.tgbot.service.command.CommandState;
-import me.kqlqk.behealthy.tgbot.service.command.commands.BackCommand;
-import me.kqlqk.behealthy.tgbot.service.command.commands.guest.DefaultGuestCommand;
-import me.kqlqk.behealthy.tgbot.service.command.commands.guest.LoginCommand;
-import me.kqlqk.behealthy.tgbot.service.command.commands.guest.RegistrationCommand;
-import me.kqlqk.behealthy.tgbot.service.command.commands.guest.StartCommand;
-import me.kqlqk.behealthy.tgbot.service.command.commands.user.auth_service.MeCommand;
-import me.kqlqk.behealthy.tgbot.service.command.commands.user.condition_service.*;
-import me.kqlqk.behealthy.tgbot.service.command.commands.user.workout_service.*;
+import me.kqlqk.behealthy.tgbot.service.command.body_condition_menu.BodyConditionMenu;
+import me.kqlqk.behealthy.tgbot.service.command.body_condition_menu.commands.GetBodyConditionCommand;
+import me.kqlqk.behealthy.tgbot.service.command.body_condition_menu.commands.SetBodyConditionCommand;
+import me.kqlqk.behealthy.tgbot.service.command.guest_menu.DefaultGuestCommand;
+import me.kqlqk.behealthy.tgbot.service.command.guest_menu.LoginCommand;
+import me.kqlqk.behealthy.tgbot.service.command.guest_menu.RegistrationCommand;
+import me.kqlqk.behealthy.tgbot.service.command.guest_menu.StartCommand;
 import me.kqlqk.behealthy.tgbot.service.command.kcals_tracker.KcalsTrackerMenu;
 import me.kqlqk.behealthy.tgbot.service.command.kcals_tracker.commands.AddFoodCommand;
-import me.kqlqk.behealthy.tgbot.service.command.kcals_tracker.commands.ChangeKcalsGoalCommand;
+import me.kqlqk.behealthy.tgbot.service.command.kcals_tracker.commands.ChangeKcalGoalCommand;
 import me.kqlqk.behealthy.tgbot.service.command.kcals_tracker.commands.GetFoodCommand;
+import me.kqlqk.behealthy.tgbot.service.command.user_commands.MeCommand;
+import me.kqlqk.behealthy.tgbot.service.command.workout_service.WorkoutServiceMenu;
+import me.kqlqk.behealthy.tgbot.service.command.workout_service.commands.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Service
+@Slf4j
 public class UpdateServiceImpl implements UpdateService {
     private final TelegramUserService telegramUserService;
     private final ApplicationContext context;
     private Command command;
+    private final GatewayClient gatewayClient;
 
     @Autowired
-    public UpdateServiceImpl(TelegramUserService telegramUserService, ApplicationContext context) {
+    public UpdateServiceImpl(TelegramUserService telegramUserService, ApplicationContext context, GatewayClient gatewayClient) {
         this.telegramUserService = telegramUserService;
         this.context = context;
+        this.gatewayClient = gatewayClient;
     }
 
     @Override
@@ -43,6 +54,7 @@ public class UpdateServiceImpl implements UpdateService {
         }
 
         long tgId = update.getMessage().getFrom().getId();
+        String chatId = update.getMessage().getChatId().toString();
 
         if (!telegramUserService.existsByTelegramId(tgId)) {
             TelegramUser newTgUser = new TelegramUser();
@@ -53,19 +65,49 @@ public class UpdateServiceImpl implements UpdateService {
         }
 
         TelegramUser tgUser = telegramUserService.getByTelegramId(tgId);
+        Command c = new Command() {
+        };
+
+        if (tgUser.getRefreshToken() != null) {
+            ValidateDTO validateDTO;
+            try {
+                validateDTO = gatewayClient.validateRefreshToken(new RefreshTokenDTO(tgUser.getRefreshToken()));
+            }
+            catch (RuntimeException e) {
+                log.error("Something went wrong", e);
+
+                SendMessage sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setReplyMarkup(c.defaultKeyboard(tgUser.isActive()));
+
+                return sendMessage;
+            }
+
+            if (!validateDTO.isValid()) {
+                SendMessage sendMessage = new SendMessage(chatId, "Please sign in / sign up again");
+                sendMessage.setReplyMarkup(c.defaultKeyboard(false));
+
+                tgUser.setActive(false);
+                tgUser.setCommandSate(CommandState.BASIC);
+                telegramUserService.update(tgUser);
+
+                return sendMessage;
+            }
+
+
+        }
 
         if (BackCommand.getNames().contains(update.getMessage().getText().toLowerCase())) {
             return handleAndReturnSendObject(update, tgUser, "backCommand", BackCommand.class);
         }
-        else if (!tgUser.isActive()) {
+
+        if (!tgUser.isActive()) {
             return choosingForInactiveUsers(update, tgUser);
         }
-        else if (tgUser.getCommandSate() != CommandState.BASIC) {
-            return choosingBetweenCommandState(update, tgUser);
-        }
-        else {
-            return choosingBetweenCommands(update, tgUser);
-        }
+
+        Object answer = choosingBetweenCommandState(update, tgUser);
+        return answer == null ?
+                choosingBetweenCommands(update, tgUser) :
+                answer;
     }
 
     private Object choosingForInactiveUsers(Update update, TelegramUser tgUser) {
@@ -98,20 +140,59 @@ public class UpdateServiceImpl implements UpdateService {
         String userMessage = update.getMessage().getText().toLowerCase();
 
         if (KcalsTrackerMenu.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "kcalsTrackerMenu", KcalsTrackerMenu.class, new TokensDTO());
+            return handleAndReturnSendObject(update, tgUser, "kcalsTrackerMenu", KcalsTrackerMenu.class, new AccessTokenDTO());
         }
 
         if (GetFoodCommand.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "getFoodCommand", GetFoodCommand.class, new TokensDTO());
+            return handleAndReturnSendObject(update, tgUser, "getFoodCommand", GetFoodCommand.class, new AccessTokenDTO());
         }
 
         if (AddFoodCommand.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "addFoodCommand", AddFoodCommand.class, new TokensDTO());
+            return handleAndReturnSendObject(update, tgUser, "addFoodCommand", AddFoodCommand.class, new AccessTokenDTO());
         }
 
-        if (ChangeKcalsGoalCommand.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "changeKcalsGoalCommand", ChangeKcalsGoalCommand.class, new TokensDTO());
+        if (ChangeKcalGoalCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "changeKcalGoalCommand", ChangeKcalGoalCommand.class, new AccessTokenDTO());
         }
+
+
+        if (BodyConditionMenu.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "bodyConditionMenu", BodyConditionMenu.class, new AccessTokenDTO());
+        }
+
+        if (GetBodyConditionCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "getBodyConditionCommand", GetBodyConditionCommand.class, new AccessTokenDTO());
+        }
+
+        if (SetBodyConditionCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "setBodyConditionCommand", SetBodyConditionCommand.class, new AccessTokenDTO());
+        }
+
+
+        if (WorkoutServiceMenu.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "workoutServiceMenu", WorkoutServiceMenu.class, new AccessTokenDTO());
+        }
+
+        if (GetWorkoutPlanCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "getWorkoutPlanCommand", GetWorkoutPlanCommand.class, new AccessTokenDTO());
+        }
+
+        if (SetWorkoutPlanCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "setWorkoutPlanCommand", SetWorkoutPlanCommand.class, new AccessTokenDTO());
+        }
+
+        if (GetUserWorkoutCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "getUserWorkoutCommand", GetUserWorkoutCommand.class, new AccessTokenDTO());
+        }
+
+        if (AddExerciseToUserWorkoutCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "addExerciseToUserWorkoutCommand", AddExerciseToUserWorkoutCommand.class, new AccessTokenDTO());
+        }
+
+        if (RemoveExerciseFromUserWorkoutCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "removeExerciseFromUserWorkoutCommand", RemoveExerciseFromUserWorkoutCommand.class, new AccessTokenDTO());
+        }
+
 
         switch (update.getMessage().getText()) {
             case "/start":
@@ -121,46 +202,7 @@ public class UpdateServiceImpl implements UpdateService {
                 return handleAndReturnSendObject(update, tgUser, "loginCommand", LoginCommand.class);
 
             case "/me":
-                return handleAndReturnSendObject(update, tgUser, "meCommand", MeCommand.class, new TokensDTO());
-
-            case "/get_condition":
-                return handleAndReturnSendObject(update, tgUser, "getConditionCommand", GetConditionCommand.class, new TokensDTO());
-
-            case "/set_condition":
-                return handleAndReturnSendObject(update, tgUser, "setConditionCommand", SetConditionCommand.class, new TokensDTO());
-
-            case "/set_condition_no_fat_percent":
-                return handleAndReturnSendObject(update, tgUser, "setConditionNoFatPercentCommand", SetConditionNoFatPercentCommand.class,
-                                                 new TokensDTO());
-
-            case "/update_condition":
-                return handleAndReturnSendObject(update, tgUser, "updateConditionCommand", UpdateConditionCommand.class, new TokensDTO());
-
-            case "/daily_kcals":
-                return handleAndReturnSendObject(update, tgUser, "dailyKcalsCommand", DailyKcalsCommand.class, new TokensDTO());
-
-            case "/delete_food":
-                return handleAndReturnSendObject(update, tgUser, "deleteFoodCommand", DeleteFoodCommand.class, new TokensDTO());
-
-            case "/create_workout":
-                return handleAndReturnSendObject(update, tgUser, "createWorkoutCommand", CreateWorkoutCommand.class, new TokensDTO());
-
-            case "/get_workout":
-                return handleAndReturnSendObject(update, tgUser, "getWorkoutCommand", GetWorkoutCommand.class, new TokensDTO());
-
-            case "/update_workout":
-                return handleAndReturnSendObject(update, tgUser, "updateWorkoutCommand", UpdateWorkoutCommand.class, new TokensDTO());
-
-            case "/update_workout_by_alternative":
-                return handleAndReturnSendObject(update, tgUser, "updateWorkoutByAlternativeExerciseCommand",
-                                                 UpdateWorkoutByAlternativeExerciseCommand.class, new TokensDTO());
-
-            case "/get_exercise_by_name":
-                return handleAndReturnSendObject(update, tgUser, "getExerciseByNameCommand", GetExerciseByNameCommand.class, new TokensDTO());
-
-            case "/get_exercises_by_muscle_group":
-                return handleAndReturnSendObject(update, tgUser, "getExercisesByMuscleGroupCommand",
-                                                 GetExercisesByMuscleGroupCommand.class, new TokensDTO());
+                return handleAndReturnSendObject(update, tgUser, "meCommand", MeCommand.class, new AccessTokenDTO());
 
             default:
                 return null;
@@ -172,48 +214,29 @@ public class UpdateServiceImpl implements UpdateService {
             case LOGIN_WAIT_FOR_DATA:
                 return handleAndReturnSendObject(update, tgUser, "loginCommand", LoginCommand.class);
 
-            case REGISTRATION_WAIT_FOR_DATA:
-                return handleAndReturnSendObject(update, tgUser, "registrationCommand", RegistrationCommand.class);
-
-            case SET_CONDITION_WAIT_FOR_DATA:
-                return handleAndReturnSendObject(update, tgUser, "setConditionCommand", SetConditionCommand.class, new TokensDTO());
-
-            case SET_CONDITION_NO_FAT_PERCENT_WAIT_FOR_GENDER:
-            case SET_CONDITION_NO_FAT_PERCENT_WAIT_FOR_DATA_MALE:
-            case SET_CONDITION_NO_FAT_PERCENT_WAIT_FOR_DATA_FEMALE:
-                return handleAndReturnSendObject(update, tgUser, "setConditionNoFatPercentCommand", SetConditionNoFatPercentCommand.class,
-                                                 new TokensDTO());
-
-            case UPDATE_CONDITION_WAIT_FOR_DATA:
-                return handleAndReturnSendObject(update, tgUser, "updateConditionCommand", UpdateConditionCommand.class, new TokensDTO());
-
             case ADD_FOOD_WAIT_FOR_DATA:
-                return handleAndReturnSendObject(update, tgUser, "addFoodCommand", AddFoodCommand.class, new TokensDTO());
+                return handleAndReturnSendObject(update, tgUser, "addFoodCommand", AddFoodCommand.class, new AccessTokenDTO());
 
-            case DELETE_FOOD_WAIT_FOR_DATA:
-                return handleAndReturnSendObject(update, tgUser, "deleteFoodCommand", DeleteFoodCommand.class, new TokensDTO());
+            case CHANGE_KCAL_GOAL_WAIT_FOR_CHOOSING:
+            case CHANGE_KCAL_GOAL_WAIT_FOR_CHOOSING_KCAL:
+            case CHANGE_KCAL_WAIT_FOR_DATA:
+                return handleAndReturnSendObject(update, tgUser, "changeKcalGoalCommand", ChangeKcalGoalCommand.class, new AccessTokenDTO());
 
-            case CREATE_WORKOUT_WAIT_FOR_DATA:
-                return handleAndReturnSendObject(update, tgUser, "createWorkoutCommand", CreateWorkoutCommand.class, new TokensDTO());
+            case SET_BODY_CONDITION_WAIT_FOR_FAT_PERCENT:
+            case SET_BODY_CONDITION_WAIT_FOR_GENDER:
+            case SET_BODY_CONDITION_WAIT_FOR_ACTIVITY:
+            case SET_BODY_CONDITION_WAIT_FOR_GOAL:
+            case SET_BODY_CONDITION_WAIT_FOR_DATA:
+                return handleAndReturnSendObject(update, tgUser, "setBodyConditionCommand", SetBodyConditionCommand.class, new AccessTokenDTO());
 
-            case UPDATE_WORKOUT_WAIT_FOR_DATA:
-                return handleAndReturnSendObject(update, tgUser, "updateWorkoutCommand", UpdateWorkoutCommand.class, new TokensDTO());
+            case SET_WORKOUT_WAIT_FOR_DATA:
+                return handleAndReturnSendObject(update, tgUser, "setWorkoutPlanCommand", SetWorkoutPlanCommand.class, new AccessTokenDTO());
 
-            case UPDATE_WITH_ALTERNATIVE_EXERCISE_WORKOUT_WAIT_FOR_DATA:
-                return handleAndReturnSendObject(update, tgUser, "updateWorkoutByAlternativeExerciseCommand",
-                                                 UpdateWorkoutByAlternativeExerciseCommand.class, new TokensDTO());
+            case ADD_EXERCISE_WAIT_FOR_DATA:
+                return handleAndReturnSendObject(update, tgUser, "addExerciseToUserWorkoutCommand", AddExerciseToUserWorkoutCommand.class, new AccessTokenDTO());
 
-            case GET_EXERCISE_BY_NAME_WAIT_FOR_DATA:
-                return handleAndReturnSendObject(update, tgUser, "getExerciseByNameCommand", GetExerciseByNameCommand.class, new TokensDTO());
-
-            case GET_EXERCISES_BY_MUSCLE_GROUP_WAIT_FOR_DATA:
-                return handleAndReturnSendObject(update, tgUser, "getExercisesByMuscleGroupCommand",
-                                                 GetExercisesByMuscleGroupCommand.class, new TokensDTO());
-
-            case CHANGE_KCALS_GOAL_WAIT_FOR_CHOOSING:
-            case CHANGE_KCALS_GOAL_WAIT_FOR_DATA:
-                return handleAndReturnSendObject(update, tgUser, "changeKcalsGoalCommand", ChangeKcalsGoalCommand.class, new TokensDTO());
-
+            case REMOVE_EXERCISE_WAIT_FOR_DATA:
+                return handleAndReturnSendObject(update, tgUser, "removeExerciseFromUserWorkoutCommand", RemoveExerciseFromUserWorkoutCommand.class, new AccessTokenDTO());
         }
 
         return null;
@@ -227,18 +250,18 @@ public class UpdateServiceImpl implements UpdateService {
 
         command.handle(update, tgUser);
 
-        return command.getSendMessage() == null ? command.getSendMessages() : command.getSendMessage();
+        return (command.getSendMessages() == null || command.getSendMessages().length == 0) ? command.getSendMessage() : command.getSendMessages();
     }
 
     private <T> Object handleAndReturnSendObject(Update update,
                                                  TelegramUser tgUser,
                                                  String beanName,
                                                  Class<? extends Command> clazz,
-                                                 TokensDTO tokensDTO) {
+                                                 AccessTokenDTO accessTokenDTO) {
         command = context.getBean(beanName, clazz);
 
-        command.handle(update, tgUser, tokensDTO, SecurityState.OK);
+        command.handle(update, tgUser, accessTokenDTO, SecurityState.OK);
 
-        return command.getSendMessage() == null ? command.getSendMessages() : command.getSendMessage();
+        return (command.getSendMessages() == null || command.getSendMessages().length == 0) ? command.getSendMessage() : command.getSendMessages();
     }
 }

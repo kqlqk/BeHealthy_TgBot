@@ -1,12 +1,14 @@
 package me.kqlqk.behealthy.tgbot.service.command.kcals_tracker.commands;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import me.kqlqk.behealthy.tgbot.aop.SecurityCheck;
 import me.kqlqk.behealthy.tgbot.aop.SecurityState;
-import me.kqlqk.behealthy.tgbot.dto.auth_service.TokensDTO;
-import me.kqlqk.behealthy.tgbot.dto.condition_service.DailyAteFoodDTO;
-import me.kqlqk.behealthy.tgbot.dto.condition_service.DailyKcalsDTO;
-import me.kqlqk.behealthy.tgbot.dto.condition_service.OwnDailyKcalsDTO;
+import me.kqlqk.behealthy.tgbot.dto.auth_service.AccessTokenDTO;
+import me.kqlqk.behealthy.tgbot.dto.condition_service.AddUpdateUserKcalDTO;
+import me.kqlqk.behealthy.tgbot.dto.condition_service.GetDailyAteFoodDTO;
+import me.kqlqk.behealthy.tgbot.dto.condition_service.GetUserConditionDTO;
+import me.kqlqk.behealthy.tgbot.dto.condition_service.GetUserKcalDTO;
 import me.kqlqk.behealthy.tgbot.feign.GatewayClient;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
@@ -26,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @Scope("prototype")
+@Slf4j
 public class GetFoodCommand implements Command {
     private SendMessage sendMessage;
 
@@ -40,7 +43,7 @@ public class GetFoodCommand implements Command {
 
     @SecurityCheck
     @Override
-    public void handle(Update update, TelegramUser tgUser, TokensDTO tokensDTO, SecurityState securityState) {
+    public void handle(Update update, TelegramUser tgUser, AccessTokenDTO accessTokenDTO, SecurityState securityState) {
         String chatId = update.getMessage().getChatId().toString();
 
         if (securityState == SecurityState.SHOULD_RELOGIN) {
@@ -54,57 +57,105 @@ public class GetFoodCommand implements Command {
             return;
         }
 
-        DailyKcalsDTO dailyKcalsDTO = null;
-        OwnDailyKcalsDTO ownDailyKcalsDTO = null;
+        GetUserConditionDTO getUserConditionDTO = null;
+        GetUserKcalDTO getUserKcalDTO = null;
         GeneralKcals generalKcals = new GeneralKcals();
 
         try {
-            ownDailyKcalsDTO = gatewayClient.getOwnDailyKcalsByUserId(tgUser.getUserId(), tokensDTO.getAccessToken());
+            getUserKcalDTO = gatewayClient.getUserKcal(tgUser.getUserId(), accessTokenDTO.getAccessToken());
         }
-        catch (RuntimeException ignored) {
+        catch (RuntimeException e) {
+            if (!e.getMessage().equals("You didn't set kilocalories goal")) {
+                log.warn("Something went wrong", e);
+
+                sendMessage = new SendMessage(chatId, e.getMessage());
+                return;
+            }
         }
 
-        try {
-            dailyKcalsDTO = gatewayClient.getUserDailyKcals(tgUser.getUserId(), tokensDTO.getAccessToken());
-        }
-        catch (RuntimeException ignored) {
-        }
+        if (getUserKcalDTO == null || !getUserKcalDTO.isInPriority()) {
+            try {
+                getUserConditionDTO = gatewayClient.getUserCondition(tgUser.getUserId(), accessTokenDTO.getAccessToken());
+            }
+            catch (RuntimeException e) {
+                if (!e.getMessage().equals("Condition not found. Check, if you have your body's condition")) {
+                    log.warn("Something went wrong", e);
 
-        if (ownDailyKcalsDTO == null && dailyKcalsDTO != null) {
-            generalKcals.setProtein(dailyKcalsDTO.getProtein());
-            generalKcals.setFat(dailyKcalsDTO.getFat());
-            generalKcals.setCarb(dailyKcalsDTO.getCarb());
-        }
-        else if (ownDailyKcalsDTO != null && dailyKcalsDTO != null) {
-            generalKcals.setProtein(ownDailyKcalsDTO.isInPriority() ? ownDailyKcalsDTO.getProtein() : dailyKcalsDTO.getProtein());
-            generalKcals.setFat(ownDailyKcalsDTO.isInPriority() ? ownDailyKcalsDTO.getFat() : dailyKcalsDTO.getFat());
-            generalKcals.setCarb(ownDailyKcalsDTO.isInPriority() ? ownDailyKcalsDTO.getCarb() : dailyKcalsDTO.getCarb());
-        }
-        else if (ownDailyKcalsDTO != null && dailyKcalsDTO == null) {
-            generalKcals.setProtein(ownDailyKcalsDTO.getProtein());
-            generalKcals.setFat(ownDailyKcalsDTO.getFat());
-            generalKcals.setCarb(ownDailyKcalsDTO.getCarb());
+                    sendMessage = new SendMessage(chatId, e.getMessage());
+                    return;
+                }
+
+                if (getUserKcalDTO != null) {
+                    AddUpdateUserKcalDTO addUpdateUserKcalDTO = new AddUpdateUserKcalDTO();
+                    addUpdateUserKcalDTO.setKcal(getUserKcalDTO.getKcal());
+                    addUpdateUserKcalDTO.setProtein(getUserKcalDTO.getProtein());
+                    addUpdateUserKcalDTO.setFat(getUserKcalDTO.getFat());
+                    addUpdateUserKcalDTO.setCarb(getUserKcalDTO.getCarb());
+                    addUpdateUserKcalDTO.setOnlyKcal(getUserKcalDTO.isOnlyKcal());
+                    addUpdateUserKcalDTO.setInPriority(true);
+
+                    try {
+                        gatewayClient.updateUserKcal(tgUser.getUserId(), addUpdateUserKcalDTO, accessTokenDTO.getAccessToken());
+                    }
+                    catch (RuntimeException ex) {
+                        log.warn("Something went wrong", e);
+
+                        sendMessage = new SendMessage(chatId, e.getMessage());
+                        sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
+                        return;
+                    }
+
+                    generalKcals.setOnlyKcal(true);
+                    if (!getUserKcalDTO.isOnlyKcal()) {
+                        generalKcals.setProtein(getUserKcalDTO.getProtein());
+                        generalKcals.setFat(getUserKcalDTO.getFat());
+                        generalKcals.setCarb(getUserKcalDTO.getCarb());
+                        generalKcals.setOnlyKcal(false);
+                    }
+                    generalKcals.setKcal(getUserKcalDTO.getKcal());
+                }
+                else {
+                    sendMessage = new SendMessage(chatId, "Please fill in your body condition or set a kilocalories goal");
+                    sendMessage.setReplyMarkup(kcalKeyboard());
+                    return;
+                }
+            }
+
+            if (getUserConditionDTO != null) {
+                generalKcals.setOnlyKcal(false);
+                generalKcals.setKcal(getUserConditionDTO.getDailyKcalDTO().getProtein() * 4 +
+                                             getUserConditionDTO.getDailyKcalDTO().getFat() * 9 +
+                                             getUserConditionDTO.getDailyKcalDTO().getCarb() * 4);
+                generalKcals.setProtein(getUserConditionDTO.getDailyKcalDTO().getProtein());
+                generalKcals.setFat(getUserConditionDTO.getDailyKcalDTO().getFat());
+                generalKcals.setCarb(getUserConditionDTO.getDailyKcalDTO().getCarb());
+            }
         }
         else {
-            sendMessage = new SendMessage(chatId, "Please fill in your body condition or set a kilocalories goal");
-            sendMessage.setReplyMarkup(initKeyboardBetweenUserConditionAndKcalsGoal());
-            return;
+            generalKcals.setOnlyKcal(true);
+            if (!getUserKcalDTO.isOnlyKcal()) {
+                generalKcals.setProtein(getUserKcalDTO.getProtein());
+                generalKcals.setFat(getUserKcalDTO.getFat());
+                generalKcals.setCarb(getUserKcalDTO.getCarb());
+                generalKcals.setOnlyKcal(false);
+            }
+            generalKcals.setKcal(getUserKcalDTO.getKcal());
         }
 
-        List<DailyAteFoodDTO> dailyAteFoodDTOs;
+        List<GetDailyAteFoodDTO> getDailyAteFoodDTOs;
         try {
-            dailyAteFoodDTOs = gatewayClient.getDailyAteFoods(tgUser.getUserId(), tokensDTO.getAccessToken());
+            getDailyAteFoodDTOs = gatewayClient.getDailyAteFoods(tgUser.getUserId(), accessTokenDTO.getAccessToken());
         }
         catch (RuntimeException e) {
             sendMessage = new SendMessage(chatId, e.getMessage());
             return;
         }
 
-        sendMessage = new SendMessage(chatId, generateText(dailyAteFoodDTOs, generalKcals));
+        sendMessage = new SendMessage(chatId, generateText(getDailyAteFoodDTOs, generalKcals));
         sendMessage.enableHtml(true);
     }
 
-    private ReplyKeyboardMarkup initKeyboardBetweenUserConditionAndKcalsGoal() {
+    private ReplyKeyboardMarkup kcalKeyboard() {
         ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
@@ -123,62 +174,53 @@ public class GetFoodCommand implements Command {
         return keyboard;
     }
 
-    public static List<String> getNames() {
-        List<String> res = new ArrayList<>();
-        res.add("/get_food");
-        res.add("get today's food \uD83D\uDD3D");
-        res.add("get today's food");
-
-        return res;
-    }
-
-    private String generateText(List<DailyAteFoodDTO> dailyAteFoodDTOs, GeneralKcals max) {
+    private String generateText(List<GetDailyAteFoodDTO> getDailyAteFoodDTOs, GeneralKcals max) {
         AtomicInteger ateKcals = new AtomicInteger();
-        dailyAteFoodDTOs.forEach(e -> ateKcals.addAndGet((int) e.getKcals()));
-        int maxKcals = max.getProtein() * 4 + max.getFat() * 9 + max.getCarb() * 4;
+        getDailyAteFoodDTOs.forEach(e -> ateKcals.addAndGet(e.getKcal()));
+        int maxKcals = max.getKcal();
 
         StringBuilder text = new StringBuilder("<b>Your progress: " + ateKcals + " in " + maxKcals + " kilocalories</b>\n");
         text.append("<pre> - - - - - - - - - - - - - - - \n");
         text.append("| Name    | Kcals    | Weight |\n");
         text.append(" - - - - - - - - - - - - - - - \n");
 
-        for (int i = dailyAteFoodDTOs.size() - 1; i >= 0; i--) {
+        for (int i = getDailyAteFoodDTOs.size() - 1; i >= 0; i--) {
             if (text.toString().getBytes().length > 4000) {
                 break;
             }
 
-            DailyAteFoodDTO dailyAteFoodDTO = dailyAteFoodDTOs.get(i);
+            GetDailyAteFoodDTO getDailyAteFoodDTO = getDailyAteFoodDTOs.get(i);
 
-            int nameLength = 7;
-            if (dailyAteFoodDTO.getName().length() > nameLength) {
-                text.append("| " + dailyAteFoodDTO.getName().substring(0, nameLength) + " | ");
+            int maxNameLength = 7;
+            if (getDailyAteFoodDTO.getName().length() > maxNameLength) {
+                text.append("| " + getDailyAteFoodDTO.getName().substring(0, maxNameLength) + " | ");
             }
             else {
-                int remainingLength = nameLength - dailyAteFoodDTO.getName().length();
+                int remainingLength = maxNameLength - getDailyAteFoodDTO.getName().length();
 
-                text.append("| " + dailyAteFoodDTO.getName());
+                text.append("| " + getDailyAteFoodDTO.getName());
                 text.append(" ".repeat(remainingLength) + " | ");
             }
 
-            int kcalsLength = 8;
-            String kcalsString = String.valueOf(dailyAteFoodDTO.getKcals());
-            if (kcalsString.length() > kcalsLength) {
-                text.append(kcalsString.substring(0, kcalsLength) + " | ");
+            int maxKcalLength = 8;
+            String kcalsString = String.valueOf(getDailyAteFoodDTO.getKcal());
+            if (kcalsString.length() > maxKcalLength) {
+                text.append(kcalsString.substring(0, maxKcalLength) + " | ");
             }
             else {
-                int remainingLength = kcalsLength - kcalsString.length();
+                int remainingLength = maxKcalLength - kcalsString.length();
 
                 text.append(kcalsString);
                 text.append(" ".repeat(remainingLength) + " | ");
             }
 
-            int weightLength = 6;
-            String weightString = String.valueOf(dailyAteFoodDTO.getWeight());
-            if (weightString.length() > weightLength) {
-                text.append(weightString.substring(0, weightLength) + " | ");
+            int maxWeightLength = 6;
+            String weightString = String.valueOf(getDailyAteFoodDTO.getWeight());
+            if (weightString.length() > maxWeightLength) {
+                text.append(weightString.substring(0, maxWeightLength) + " | ");
             }
             else {
-                int remainingLength = weightLength - weightString.length();
+                int remainingLength = maxWeightLength - weightString.length();
 
                 text.append(weightString);
                 text.append(" ".repeat(remainingLength) + " |\n");
@@ -192,6 +234,15 @@ public class GetFoodCommand implements Command {
         return text.toString();
     }
 
+    public static List<String> getNames() {
+        List<String> res = new ArrayList<>();
+        res.add("/get_food");
+        res.add("get today's food \uD83D\uDD3D");
+        res.add("get today's food");
+
+        return res;
+    }
+
     @Override
     public SendMessage getSendMessage() {
         return sendMessage;
@@ -199,6 +250,8 @@ public class GetFoodCommand implements Command {
 
     @Data
     private class GeneralKcals {
+        private boolean onlyKcal;
+        private int kcal;
         private int protein;
         private int fat;
         private int carb;
