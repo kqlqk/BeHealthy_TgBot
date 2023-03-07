@@ -25,7 +25,7 @@ import java.util.List;
 @Service
 @Scope("prototype")
 @Slf4j
-public class GetBodyConditionCommand implements Command {
+public class GetBodyConditionCommand extends Command {
     private SendMessage sendMessage;
 
     private final TelegramUserService telegramUserService;

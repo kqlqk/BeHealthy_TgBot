@@ -9,7 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Service
 @Scope("prototype")
-public class DefaultGuestCommand implements Command {
+public class DefaultGuestCommand extends Command {
     private SendMessage sendMessage;
 
     @Override

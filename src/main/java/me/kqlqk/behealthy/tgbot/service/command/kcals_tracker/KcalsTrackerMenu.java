@@ -21,7 +21,7 @@ import java.util.List;
 
 @Service
 @Scope("prototype")
-public class KcalsTrackerMenu implements Command {
+public class KcalsTrackerMenu extends Command {
     private SendMessage sendMessage;
 
     private final TelegramUserService telegramUserService;

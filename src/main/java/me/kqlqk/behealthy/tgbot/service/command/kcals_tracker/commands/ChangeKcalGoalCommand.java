@@ -29,7 +29,7 @@ import java.util.List;
 @Service
 @Scope("prototype")
 @Slf4j
-public class ChangeKcalGoalCommand implements Command {
+public class ChangeKcalGoalCommand extends Command {
     private SendMessage sendMessage;
 
     private final TelegramUserService telegramUserService;

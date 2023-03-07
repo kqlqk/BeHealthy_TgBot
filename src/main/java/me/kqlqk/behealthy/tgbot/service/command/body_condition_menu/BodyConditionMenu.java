@@ -20,7 +20,7 @@ import java.util.List;
 
 @Service
 @Scope("prototype")
-public class BodyConditionMenu implements Command {
+public class BodyConditionMenu extends Command {
     private SendMessage sendMessage;
 
     private final TelegramUserService telegramUserService;
@@ -79,7 +79,6 @@ public class BodyConditionMenu implements Command {
 
         return res;
     }
-
 
     @Override
     public SendMessage getSendMessage() {

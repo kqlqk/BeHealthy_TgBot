@@ -19,7 +19,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @Service
 @Slf4j
 @Scope("prototype")
-public class MeCommand implements Command {
+public class MeCommand extends Command {
     private SendMessage sendMessage;
     private final GatewayClient gatewayClient;
     private final TelegramUserService telegramUserService;

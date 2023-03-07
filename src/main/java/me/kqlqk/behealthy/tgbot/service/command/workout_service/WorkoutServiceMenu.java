@@ -20,7 +20,7 @@ import java.util.List;
 
 @Service
 @Scope("prototype")
-public class WorkoutServiceMenu implements Command {
+public class WorkoutServiceMenu extends Command {
     private SendMessage sendMessage;
 
     private final TelegramUserService telegramUserService;

@@ -27,7 +27,7 @@ import java.util.List;
 @Service
 @Scope("prototype")
 @Slf4j
-public class SetBodyConditionCommand implements Command {
+public class SetBodyConditionCommand extends Command {
     private SendMessage sendMessage;
     private final List<SendMessage> sendMessages;
 

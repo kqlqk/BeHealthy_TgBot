@@ -11,14 +11,14 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import java.util.ArrayList;
 import java.util.List;
 
-public interface Command {
-    default void handle(Update update, TelegramUser tgUser) {
+public abstract class Command {
+    public void handle(Update update, TelegramUser tgUser) {
     }
 
-    default void handle(Update update, TelegramUser tgUser, AccessTokenDTO accessTokenDTO, SecurityState securityState) {
+    public void handle(Update update, TelegramUser tgUser, AccessTokenDTO accessTokenDTO, SecurityState securityState) {
     }
 
-    default ReplyKeyboardMarkup defaultKeyboard(boolean userActive) {
+    public ReplyKeyboardMarkup defaultKeyboard(boolean userActive) {
         ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
@@ -47,7 +47,7 @@ public interface Command {
         return keyboard;
     }
 
-    default ReplyKeyboardMarkup onlyBackCommandKeyboard() {
+    public ReplyKeyboardMarkup onlyBackCommandKeyboard() {
         ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
@@ -62,12 +62,12 @@ public interface Command {
         return keyboard;
     }
 
-    default SendMessage getSendMessage() {
+    public SendMessage getSendMessage() {
         return null;
     }
 
 
-    default SendMessage[] getSendMessages() {
+    public SendMessage[] getSendMessages() {
         return null;
     }
 }

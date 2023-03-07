@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @Service
 @Scope("prototype")
 @Slf4j
-public class GetUserWorkoutCommand implements Command {
+public class GetUserWorkoutCommand extends Command {
     private SendMessage sendMessage;
 
     private final TelegramUserService telegramUserService;

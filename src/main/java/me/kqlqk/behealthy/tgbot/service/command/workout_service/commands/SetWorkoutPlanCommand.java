@@ -25,7 +25,7 @@ import java.util.List;
 @Service
 @Scope("prototype")
 @Slf4j
-public class SetWorkoutPlanCommand implements Command {
+public class SetWorkoutPlanCommand extends Command {
     private SendMessage sendMessage;
     private final List<SendMessage> sendMessages;
 

@@ -19,7 +19,7 @@ import java.util.List;
 
 @Service
 @Scope("prototype")
-public class BackCommand implements Command {
+public class BackCommand extends Command {
     private SendMessage sendMessage;
     private final TelegramUserService telegramUserService;
     private final KcalsTrackerMenu kcalsTrackerMenu;

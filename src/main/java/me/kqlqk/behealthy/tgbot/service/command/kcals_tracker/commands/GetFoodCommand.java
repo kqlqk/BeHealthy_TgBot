@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Service
 @Scope("prototype")
 @Slf4j
-public class GetFoodCommand implements Command {
+public class GetFoodCommand extends Command {
     private SendMessage sendMessage;
 
     private final TelegramUserService telegramUserService;

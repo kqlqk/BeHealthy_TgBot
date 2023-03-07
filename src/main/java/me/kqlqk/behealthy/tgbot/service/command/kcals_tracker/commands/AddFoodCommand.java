@@ -22,7 +22,7 @@ import java.util.List;
 
 @Service
 @Scope("prototype")
-public class AddFoodCommand implements Command {
+public class AddFoodCommand extends Command {
     private final List<SendMessage> sendMessages;
     private SendMessage sendMessage;
 

@@ -23,7 +23,7 @@ import java.util.List;
 @Service
 @Scope("prototype")
 @Slf4j
-public class AddExerciseToUserWorkoutCommand implements Command {
+public class AddExerciseToUserWorkoutCommand extends Command {
     private SendMessage sendMessage;
     private final List<SendMessage> sendMessages;
 

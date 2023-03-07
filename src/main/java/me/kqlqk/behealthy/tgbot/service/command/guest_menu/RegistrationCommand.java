@@ -19,7 +19,7 @@ import java.util.List;
 
 @Service
 @Scope("prototype")
-public class RegistrationCommand implements Command {
+public class RegistrationCommand extends Command {
     private final GatewayClient gatewayClient;
     private final TelegramUserService telegramUserService;
 

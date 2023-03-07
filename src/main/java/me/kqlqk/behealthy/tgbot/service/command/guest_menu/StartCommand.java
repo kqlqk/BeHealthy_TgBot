@@ -12,7 +12,7 @@ import java.util.List;
 
 @Service
 @Scope("prototype")
-public class StartCommand implements Command {
+public class StartCommand extends Command {
     private SendMessage sendMessage;
 
     @Override
