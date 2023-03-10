@@ -1,4 +1,4 @@
-package me.kqlqk.behealthy.tgbot.dto.condition_service;
+package me.kqlqk.behealthy.tgbot.dto.user_condition_service;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,7 +12,7 @@ public class AddUpdateUserConditionDTO {
     private int age;
     private int height;
     private int weight;
-    private String intensity;
+    private String activity;
     private String goal;
     private double fatPercent;
     private boolean fatPercentExists;
@@ -26,7 +26,7 @@ public class AddUpdateUserConditionDTO {
                                      int age,
                                      int height,
                                      int weight,
-                                     String intensity,
+                                     String activity,
                                      String goal,
                                      double fatPercent,
                                      boolean fatPercentExists) {
@@ -34,7 +34,7 @@ public class AddUpdateUserConditionDTO {
         this.age = age;
         this.height = height;
         this.weight = weight;
-        this.intensity = intensity;
+        this.activity = activity;
         this.goal = goal;
         this.fatPercent = fatPercent;
         this.fatPercentExists = fatPercentExists;

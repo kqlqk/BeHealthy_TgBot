@@ -3,7 +3,7 @@ package me.kqlqk.behealthy.tgbot.service.command.kcals_tracker.commands;
 import me.kqlqk.behealthy.tgbot.aop.SecurityCheck;
 import me.kqlqk.behealthy.tgbot.aop.SecurityState;
 import me.kqlqk.behealthy.tgbot.dto.auth_service.AccessTokenDTO;
-import me.kqlqk.behealthy.tgbot.dto.condition_service.AddDailyAteFoodDTO;
+import me.kqlqk.behealthy.tgbot.dto.user_condition_service.AddDailyAteFoodDTO;
 import me.kqlqk.behealthy.tgbot.exception.BadUserDataException;
 import me.kqlqk.behealthy.tgbot.feign.GatewayClient;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;

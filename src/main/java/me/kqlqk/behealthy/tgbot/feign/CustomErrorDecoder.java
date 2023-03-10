@@ -89,8 +89,8 @@ public class CustomErrorDecoder implements ErrorDecoder {
         else if (errorMessage.matches("Gender cannot be null")) {
             errorMessage = "'Gender' cannot be empty";
         }
-        else if (errorMessage.matches("Intensity cannot be null")) {
-            errorMessage = "'Intensity' cannot be empty";
+        else if (errorMessage.matches("Activity cannot be null")) {
+            errorMessage = "'Activity' cannot be empty";
         }
         else if (errorMessage.matches("Goal cannot be null")) {
             errorMessage = "'Goal' cannot be empty";
@@ -155,7 +155,7 @@ public class CustomErrorDecoder implements ErrorDecoder {
         else if (errorMessage.matches("Please use valid gender \\(MALE or FEMALE\\)")) {
             errorMessage = "Invalid gender";
         }
-        else if (errorMessage.matches("Please use valid intensity \\(MIN or AVG or MAX\\)")) {
+        else if (errorMessage.matches("Please use valid activity \\(MIN or AVG or MAX\\)")) {
             errorMessage = "Invalid activity";
         }
         else if (errorMessage.matches("Please use valid goal \\(LOSE or MAINTAIN or GAIN\\)")) {

@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.kqlqk.behealthy.tgbot.aop.SecurityCheck;
 import me.kqlqk.behealthy.tgbot.aop.SecurityState;
 import me.kqlqk.behealthy.tgbot.dto.auth_service.AccessTokenDTO;
-import me.kqlqk.behealthy.tgbot.dto.condition_service.GetUserConditionDTO;
+import me.kqlqk.behealthy.tgbot.dto.user_condition_service.GetUserConditionDTO;
 import me.kqlqk.behealthy.tgbot.feign.GatewayClient;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
@@ -121,7 +121,7 @@ public class GetBodyConditionCommand extends Command {
         text.append("Weight: " + getUserConditionDTO.getWeight() + " kg.\n");
         text.append("Fat: " + getUserConditionDTO.getFatPercent() + " %\n");
         text.append("Goal: " + setStringGoal(getUserConditionDTO.getGoal()) + "\n");
-        text.append("Intensity: " + setStringIntensity(getUserConditionDTO.getIntensity()) + "</pre>\n\n");
+        text.append("Activity: " + setStringActivity(getUserConditionDTO.getActivity()) + "</pre>\n\n");
         text.append("<b>Recommended kilocalories:</b>\n");
 
         int protein = getUserConditionDTO.getDailyKcalDTO().getProtein();
@@ -152,8 +152,8 @@ public class GetBodyConditionCommand extends Command {
         }
     }
 
-    private String setStringIntensity(String intensity) {
-        switch (intensity) {
+    private String setStringActivity(String activity) {
+        switch (activity) {
             case "MIN":
                 return "Minimal activity";
 

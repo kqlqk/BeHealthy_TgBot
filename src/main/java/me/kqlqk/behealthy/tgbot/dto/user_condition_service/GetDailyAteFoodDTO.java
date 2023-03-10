@@ -1,4 +1,4 @@
-package me.kqlqk.behealthy.tgbot.dto.condition_service;
+package me.kqlqk.behealthy.tgbot.dto.user_condition_service;
 
 import lombok.Data;
 

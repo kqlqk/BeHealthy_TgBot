@@ -2,7 +2,7 @@ package me.kqlqk.behealthy.tgbot.feign;
 
 import me.kqlqk.behealthy.tgbot.dto.ValidateDTO;
 import me.kqlqk.behealthy.tgbot.dto.auth_service.*;
-import me.kqlqk.behealthy.tgbot.dto.condition_service.*;
+import me.kqlqk.behealthy.tgbot.dto.user_condition_service.*;
 import me.kqlqk.behealthy.tgbot.dto.workout_service.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;

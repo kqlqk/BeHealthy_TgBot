@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.kqlqk.behealthy.tgbot.aop.SecurityCheck;
 import me.kqlqk.behealthy.tgbot.aop.SecurityState;
 import me.kqlqk.behealthy.tgbot.dto.auth_service.AccessTokenDTO;
-import me.kqlqk.behealthy.tgbot.dto.condition_service.AddUpdateUserConditionDTO;
+import me.kqlqk.behealthy.tgbot.dto.user_condition_service.AddUpdateUserConditionDTO;
 import me.kqlqk.behealthy.tgbot.exception.BadUserDataException;
 import me.kqlqk.behealthy.tgbot.feign.GatewayClient;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
@@ -185,7 +185,7 @@ public class SetBodyConditionCommand extends Command {
 
             AddUpdateUserConditionDTO addUpdateUserConditionDTO = new AddUpdateUserConditionDTO();
             addUpdateUserConditionDTO.setGoal(Maps.getUserIdGoal(tgUser.getUserId()));
-            addUpdateUserConditionDTO.setIntensity(Maps.getUserIdActivity(tgUser.getUserId()));
+            addUpdateUserConditionDTO.setActivity(Maps.getUserIdActivity(tgUser.getUserId()));
             addUpdateUserConditionDTO.setAge(Integer.parseInt(data[0]));
             addUpdateUserConditionDTO.setHeight(Integer.parseInt(data[1]));
             addUpdateUserConditionDTO.setWeight(Integer.parseInt(data[2]));

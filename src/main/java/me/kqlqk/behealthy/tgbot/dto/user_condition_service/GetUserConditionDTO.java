@@ -1,4 +1,4 @@
-package me.kqlqk.behealthy.tgbot.dto.condition_service;
+package me.kqlqk.behealthy.tgbot.dto.user_condition_service;
 
 import lombok.Data;
 
@@ -9,7 +9,7 @@ public class GetUserConditionDTO {
     private int age;
     private int height;
     private int weight;
-    private String intensity;
+    private String activity;
     private String goal;
     private double fatPercent;
 }
