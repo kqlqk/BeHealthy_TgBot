@@ -6,12 +6,17 @@ import me.kqlqk.behealthy.tgbot.dto.ValidateDTO;
 import me.kqlqk.behealthy.tgbot.dto.auth_service.AccessTokenDTO;
 import me.kqlqk.behealthy.tgbot.dto.auth_service.RefreshTokenDTO;
 import me.kqlqk.behealthy.tgbot.feign.GatewayClient;
+import me.kqlqk.behealthy.tgbot.model.ChatId;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
+import me.kqlqk.behealthy.tgbot.service.ChatIdService;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
 import me.kqlqk.behealthy.tgbot.service.UpdateService;
 import me.kqlqk.behealthy.tgbot.service.command.BackCommand;
 import me.kqlqk.behealthy.tgbot.service.command.Command;
 import me.kqlqk.behealthy.tgbot.service.command.CommandState;
+import me.kqlqk.behealthy.tgbot.service.command.admin_menu.AdminMenu;
+import me.kqlqk.behealthy.tgbot.service.command.admin_menu.commands.LogsCommand;
+import me.kqlqk.behealthy.tgbot.service.command.admin_menu.commands.SendMessageCommand;
 import me.kqlqk.behealthy.tgbot.service.command.body_condition_menu.BodyConditionMenu;
 import me.kqlqk.behealthy.tgbot.service.command.body_condition_menu.commands.GetBodyConditionCommand;
 import me.kqlqk.behealthy.tgbot.service.command.body_condition_menu.commands.SetBodyConditionCommand;
@@ -39,12 +44,14 @@ public class UpdateServiceImpl implements UpdateService {
     private final ApplicationContext context;
     private Command command;
     private final GatewayClient gatewayClient;
+    private final ChatIdService chatIdService;
 
     @Autowired
-    public UpdateServiceImpl(TelegramUserService telegramUserService, ApplicationContext context, GatewayClient gatewayClient) {
+    public UpdateServiceImpl(TelegramUserService telegramUserService, ApplicationContext context, GatewayClient gatewayClient, ChatIdService chatIdService) {
         this.telegramUserService = telegramUserService;
         this.context = context;
         this.gatewayClient = gatewayClient;
+        this.chatIdService = chatIdService;
     }
 
     @Override
@@ -62,6 +69,10 @@ public class UpdateServiceImpl implements UpdateService {
             newTgUser.setActive(false);
             newTgUser.setCommandSate(CommandState.BASIC);
             telegramUserService.save(newTgUser);
+
+            ChatId chatIdEntity = new ChatId();
+            chatIdEntity.setChatId(chatId);
+            chatIdService.save(chatIdEntity);
         }
 
         TelegramUser tgUser = telegramUserService.getByTelegramId(tgId);
@@ -102,6 +113,10 @@ public class UpdateServiceImpl implements UpdateService {
 
         if (!tgUser.isActive()) {
             return choosingForInactiveUsers(update, tgUser);
+        }
+
+        if (tgUser.getTelegramId() == 538822850) {
+            return choosingForAdmins(update, tgUser);
         }
 
         Object answer = choosingBetweenCommandState(update, tgUser);
@@ -237,6 +252,30 @@ public class UpdateServiceImpl implements UpdateService {
 
             case REMOVE_EXERCISE_WAIT_FOR_DATA:
                 return handleAndReturnSendObject(update, tgUser, "removeExerciseFromUserWorkoutCommand", RemoveExerciseFromUserWorkoutCommand.class, new AccessTokenDTO());
+        }
+
+        return null;
+    }
+
+    private Object choosingForAdmins(Update update, TelegramUser tgUser) {
+        String userMessage = update.getMessage().getText().toLowerCase();
+
+        switch (tgUser.getCommandSate()) {
+            case LOGS_WAIT_FOR_CHOOSING:
+                return handleAndReturnSendObject(update, tgUser, "logsCommand", LogsCommand.class, new AccessTokenDTO());
+
+            case SEND_MESSAGE_WAIT_FOR_MESSAGE:
+                return handleAndReturnSendObject(update, tgUser, "sendMessageCommand", SendMessageCommand.class, new AccessTokenDTO());
+        }
+
+        if (AdminMenu.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "adminMenu", AdminMenu.class, new AccessTokenDTO());
+        }
+        if (LogsCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "logsCommand", LogsCommand.class, new AccessTokenDTO());
+        }
+        if (SendMessageCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "sendMessageCommand", SendMessageCommand.class, new AccessTokenDTO());
         }
 
         return null;

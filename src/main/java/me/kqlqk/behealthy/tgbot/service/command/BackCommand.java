@@ -4,6 +4,7 @@ import me.kqlqk.behealthy.tgbot.aop.SecurityState;
 import me.kqlqk.behealthy.tgbot.dto.auth_service.AccessTokenDTO;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
+import me.kqlqk.behealthy.tgbot.service.command.admin_menu.AdminMenu;
 import me.kqlqk.behealthy.tgbot.service.command.body_condition_menu.BodyConditionMenu;
 import me.kqlqk.behealthy.tgbot.service.command.kcals_tracker.KcalsTrackerMenu;
 import me.kqlqk.behealthy.tgbot.service.command.workout_service.WorkoutServiceMenu;
@@ -68,6 +69,11 @@ public class BackCommand extends Command {
                 getUserWorkoutCommand.handle(update, tgUser, new AccessTokenDTO(), SecurityState.OK);
                 sendMessage = getUserWorkoutCommand.getSendMessage();
                 sendMessage.setReplyMarkup(GetUserWorkoutCommand.initKeyboard());
+                break;
+
+            case LOGS_WAIT_FOR_CHOOSING:
+            case SEND_MESSAGE_WAIT_FOR_MESSAGE:
+                sendMessage.setReplyMarkup(AdminMenu.initKeyboard());
                 break;
 
             default:

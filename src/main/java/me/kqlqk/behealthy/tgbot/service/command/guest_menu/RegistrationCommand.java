@@ -64,7 +64,7 @@ public class RegistrationCommand extends Command {
                 return;
             }
 
-            RegistrationDTO registrationDTO = new RegistrationDTO(data[0], data[1], data[2]);
+            RegistrationDTO registrationDTO = new RegistrationDTO(data[1], data[0], data[2]);
 
             TokensDTO tokensDTO;
             try {
