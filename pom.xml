@@ -99,7 +99,7 @@
     </dependencyManagement>
 
     <build>
-        <finalName>tgBot</finalName>
+        <finalName>tg-bot</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
