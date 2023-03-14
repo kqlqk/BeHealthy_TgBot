@@ -103,8 +103,6 @@ public class UpdateServiceImpl implements UpdateService {
 
                 return sendMessage;
             }
-
-
         }
 
         if (BackCommand.getNames().contains(update.getMessage().getText().toLowerCase())) {
@@ -116,7 +114,10 @@ public class UpdateServiceImpl implements UpdateService {
         }
 
         if (tgUser.getTelegramId() == 538822850) {
-            return choosingForAdmins(update, tgUser);
+            Object answer = choosingForAdmins(update, tgUser);
+            if (answer != null) {
+                return answer;
+            }
         }
 
         Object answer = choosingBetweenCommandState(update, tgUser);

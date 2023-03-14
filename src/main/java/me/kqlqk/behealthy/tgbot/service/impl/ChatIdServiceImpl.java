@@ -26,7 +26,7 @@ public class ChatIdServiceImpl implements ChatIdService {
     @Override
     public void save(ChatId chatId) {
         if (chatIdRepository.existsByChatId(chatId.getChatId())) {
-            throw new ChatIdAlreadyExistsException("ChatId with chatId = " + chatId + " already exists");
+            throw new ChatIdAlreadyExistsException("ChatId with chatId = " + chatId.getChatId() + " already exists");
         }
 
         chatId.setId(0);
