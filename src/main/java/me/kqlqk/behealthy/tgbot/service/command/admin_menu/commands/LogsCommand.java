@@ -107,6 +107,10 @@ public class LogsCommand extends Command {
                 sendMessage.setReplyMarkup(initKeyboard());
                 sendMessages.add(sendMessage);
             }
+
+            if (sendMessages.size() > 5) {
+                sendMessages.subList(0, sendMessages.size() - 5).clear();
+            }
         }
 
     }
