@@ -67,19 +67,19 @@ public class LogsCommand extends Command {
             String path;
 
             if (userMessage.equalsIgnoreCase("Authentication service")) {
-                path = BASE_DIRECTORY + " /authenticationService-logs.log";
+                path = BASE_DIRECTORY + "/authenticationService-logs.log";
             }
             else if (userMessage.equalsIgnoreCase("User condition service")) {
-                path = BASE_DIRECTORY + " /userConditionService-logs.log";
+                path = BASE_DIRECTORY + "/userConditionService-logs.log";
             }
             else if (userMessage.equalsIgnoreCase("Workout service")) {
-                path = BASE_DIRECTORY + " /workoutService-logs.log";
+                path = BASE_DIRECTORY + "/workoutService-logs.log";
             }
             else if (userMessage.equalsIgnoreCase("Gateway")) {
-                path = BASE_DIRECTORY + " /gateway-logs.log";
+                path = BASE_DIRECTORY + "/gateway-logs.log";
             }
             else if (userMessage.equalsIgnoreCase("TgBot")) {
-                path = BASE_DIRECTORY + " /tgBot-logs.log";
+                path = BASE_DIRECTORY + "/tgBot-logs.log";
             }
             else {
                 sendMessage = new SendMessage(chatId, "Nothing found");
