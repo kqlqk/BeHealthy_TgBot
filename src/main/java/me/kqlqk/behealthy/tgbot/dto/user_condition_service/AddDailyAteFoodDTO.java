@@ -13,4 +13,5 @@ public class AddDailyAteFoodDTO {
     private int protein;
     private int fat;
     private int carb;
+    private boolean today;
 }

@@ -11,4 +11,5 @@ public class GetDailyAteFoodDTO {
     private int protein;
     private int fat;
     private int carb;
+    private boolean today;
 }

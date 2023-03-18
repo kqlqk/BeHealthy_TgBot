@@ -80,7 +80,8 @@ public class AddFoodCommand extends Command {
                                                                            Double.parseDouble(food[1]),
                                                                            Integer.parseInt(food[2]),
                                                                            Integer.parseInt(food[3]),
-                                                                           Integer.parseInt(food[4]));
+                                                                           Integer.parseInt(food[4]),
+                                                                           true);
 
             try {
                 gatewayClient.saveDailyAteFood(tgUser.getUserId(), addDailyAteFoodDTO, accessTokenDTO.getAccessToken());
