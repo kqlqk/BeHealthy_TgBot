@@ -10,13 +10,16 @@ public class Maps {
     private static final Map<Long, String> userIdGender = new LinkedHashMap<>();
     private static final Map<Long, String> userIdActivity = new LinkedHashMap<>();
     private static final Map<Long, String> userIdGoal = new LinkedHashMap<>();
+    private static final Map<Long, String> userIdAddFoodCallback = new LinkedHashMap<>();
+    private static final Map<Long, Integer> userIdPage = new LinkedHashMap<>();
 
-    public static void removeFromAll(long userId) {
+    public static void removeFromAllExceptPage(long userId) {
+        removeUserIdOnlyKcal(userId);
         removeUserIdFatPercent(userId);
         removeUserIdGender(userId);
-        removeUserIdGoal(userId);
-        removeUserIdOnlyKcal(userId);
         removeUserIdActivity(userId);
+        removeUserIdGoal(userId);
+        removeUserIdAddFoodCallback(userId);
     }
 
     public static void putUserIdOnlyKcal(long userId, boolean onlyKcal) {
@@ -101,5 +104,39 @@ public class Maps {
 
     public static String getUserIdGoal(long userId) {
         return userIdGoal.get(userId);
+    }
+
+
+    public static void putUserIdAddFoodCallback(long userId, String callback) {
+        if (userIdAddFoodCallback.size() > 50) {
+            userIdAddFoodCallback.remove(userIdAddFoodCallback.entrySet().iterator().next());
+        }
+
+        userIdAddFoodCallback.put(userId, callback);
+    }
+
+    public static void removeUserIdAddFoodCallback(long userId) {
+        userIdAddFoodCallback.remove(userId);
+    }
+
+    public static String getUserIdAddFoodCallback(long userId) {
+        return userIdAddFoodCallback.get(userId);
+    }
+
+
+    public static void putUserIdPage(long userId, int page) {
+        if (userIdPage.size() > 50) {
+            userIdPage.remove(userIdPage.entrySet().iterator().next());
+        }
+
+        userIdPage.put(userId, page);
+    }
+
+    public static void removeUserIdPage(long userId) {
+        userIdPage.remove(userId);
+    }
+
+    public static Integer getUserIdPage(long userId) {
+        return userIdPage.get(userId);
     }
 }

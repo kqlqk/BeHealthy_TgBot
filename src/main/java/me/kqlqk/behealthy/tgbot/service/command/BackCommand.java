@@ -13,6 +13,7 @@ import me.kqlqk.behealthy.tgbot.util.Maps;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.ArrayList;
@@ -21,7 +22,10 @@ import java.util.List;
 @Service
 @Scope("prototype")
 public class BackCommand extends Command {
-    private SendMessage sendMessage;
+    private final List<Object> sendObjects;
+    private static String chatId;
+    private static Integer messageId;
+
     private final TelegramUserService telegramUserService;
     private final KcalsTrackerMenu kcalsTrackerMenu;
     private final GetUserWorkoutCommand getUserWorkoutCommand;
@@ -30,15 +34,24 @@ public class BackCommand extends Command {
         this.telegramUserService = telegramUserService;
         this.kcalsTrackerMenu = kcalsTrackerMenu;
         this.getUserWorkoutCommand = getUserWorkoutCommand;
+        this.sendObjects = new ArrayList<>();
     }
 
     @Override
     public void handle(Update update, TelegramUser tgUser) {
         String chatId = update.getMessage().getChatId().toString();
 
-        sendMessage = new SendMessage(chatId, "Choose one of the following menu item");
+        SendMessage sendMessage = new SendMessage(chatId, "Choose one of the following menu item");
 
-        Maps.removeFromAll(tgUser.getUserId());
+        Maps.removeFromAllExceptPage(tgUser.getUserId());
+        if (BackCommand.chatId != null && BackCommand.messageId != null) {
+            DeleteMessage deleteMessage = new DeleteMessage(BackCommand.chatId, messageId);
+            sendObjects.add(deleteMessage);
+            Maps.removeUserIdPage(tgUser.getUserId());
+        }
+
+        BackCommand.chatId = null;
+        BackCommand.messageId = null;
 
         switch (tgUser.getCommandSate()) {
             case ADD_FOOD_WAIT_FOR_DATA:
@@ -81,8 +94,15 @@ public class BackCommand extends Command {
                 break;
         }
 
+        sendObjects.add(sendMessage);
+
         tgUser.setCommandSate(CommandState.BASIC);
         telegramUserService.update(tgUser);
+    }
+
+    public static void setInfoToDeleteMessage(String chatId, Integer messageId) {
+        BackCommand.chatId = chatId;
+        BackCommand.messageId = messageId;
     }
 
     public static List<String> getNames() {
@@ -95,7 +115,7 @@ public class BackCommand extends Command {
     }
 
     @Override
-    public SendMessage getSendMessage() {
-        return sendMessage;
+    public Object[] getSendObjects() {
+        return sendObjects.toArray(new Object[sendObjects.size()]);
     }
 }

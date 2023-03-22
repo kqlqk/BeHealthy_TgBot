@@ -29,7 +29,7 @@ import java.util.List;
 @Slf4j
 public class SetBodyConditionCommand extends Command {
     private SendMessage sendMessage;
-    private final List<SendMessage> sendMessages;
+    private final List<Object> sendObjects;
 
     private final TelegramUserService telegramUserService;
     private final GatewayClient gatewayClient;
@@ -40,7 +40,7 @@ public class SetBodyConditionCommand extends Command {
         this.telegramUserService = telegramUserService;
         this.gatewayClient = gatewayClient;
         this.bodyConditionMenu = bodyConditionMenu;
-        sendMessages = new ArrayList<>();
+        sendObjects = new ArrayList<>();
     }
 
     @SecurityCheck
@@ -246,8 +246,8 @@ public class SetBodyConditionCommand extends Command {
             SendMessage sendMessage1 = new SendMessage(chatId, "Successfully");
             SendMessage sendMessage2 = bodyConditionMenu.getSendMessage();
             sendMessage2.setReplyMarkup(BodyConditionMenu.initKeyboard());
-            sendMessages.add(sendMessage1);
-            sendMessages.add(sendMessage2);
+            sendObjects.add(sendMessage1);
+            sendObjects.add(sendMessage2);
         }
     }
 
@@ -491,7 +491,7 @@ public class SetBodyConditionCommand extends Command {
     }
 
     @Override
-    public SendMessage[] getSendMessages() {
-        return sendMessages.toArray(new SendMessage[sendMessages.size()]);
+    public Object[] getSendObjects() {
+        return sendObjects.toArray(new Object[sendObjects.size()]);
     }
 }

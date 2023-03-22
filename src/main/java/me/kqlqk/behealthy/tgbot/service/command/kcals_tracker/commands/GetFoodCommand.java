@@ -144,7 +144,7 @@ public class GetFoodCommand extends Command {
 
         List<GetDailyAteFoodDTO> getDailyAteFoodDTOs;
         try {
-            getDailyAteFoodDTOs = gatewayClient.getDailyAteFoods(tgUser.getUserId(), accessTokenDTO.getAccessToken());
+            getDailyAteFoodDTOs = gatewayClient.getAllDailyAteFoods(tgUser.getUserId(), accessTokenDTO.getAccessToken());
         }
         catch (RuntimeException e) {
             sendMessage = new SendMessage(chatId, e.getMessage());

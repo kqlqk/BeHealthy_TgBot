@@ -25,7 +25,7 @@ import java.util.List;
 @Slf4j
 public class AddExerciseToUserWorkoutCommand extends Command {
     private SendMessage sendMessage;
-    private final List<SendMessage> sendMessages;
+    private final List<Object> sendObjects;
 
     private final TelegramUserService telegramUserService;
     private final GatewayClient gatewayClient;
@@ -36,7 +36,7 @@ public class AddExerciseToUserWorkoutCommand extends Command {
         this.telegramUserService = telegramUserService;
         this.gatewayClient = gatewayClient;
         this.getUserWorkoutCommand = getUserWorkoutCommand;
-        sendMessages = new ArrayList<>();
+        sendObjects = new ArrayList<>();
     }
 
     @SecurityCheck
@@ -101,8 +101,8 @@ public class AddExerciseToUserWorkoutCommand extends Command {
             SendMessage sendMessage1 = new SendMessage(chatId, "Successfully");
             SendMessage sendMessage2 = getUserWorkoutCommand.getSendMessage();
             sendMessage2.setReplyMarkup(GetUserWorkoutCommand.initKeyboard());
-            sendMessages.add(sendMessage1);
-            sendMessages.add(sendMessage2);
+            sendObjects.add(sendMessage1);
+            sendObjects.add(sendMessage2);
         }
     }
 
@@ -159,8 +159,8 @@ public class AddExerciseToUserWorkoutCommand extends Command {
     }
 
     @Override
-    public SendMessage[] getSendMessages() {
-        return sendMessages.toArray(new SendMessage[sendMessages.size()]);
+    public Object[] getSendObjects() {
+        return sendObjects.toArray(new Object[sendObjects.size()]);
     }
 }
 

@@ -26,7 +26,7 @@ import java.util.List;
 @Slf4j
 public class LogsCommand extends Command {
     private SendMessage sendMessage;
-    private final List<SendMessage> sendMessages;
+    private final List<Object> sendObjects;
 
     private final TelegramUserService telegramUserService;
 
@@ -35,7 +35,7 @@ public class LogsCommand extends Command {
     @Autowired
     public LogsCommand(TelegramUserService telegramUserService) {
         this.telegramUserService = telegramUserService;
-        sendMessages = new ArrayList<>();
+        sendObjects = new ArrayList<>();
     }
 
     @SecurityCheck
@@ -105,11 +105,11 @@ public class LogsCommand extends Command {
 
                 SendMessage sendMessage = new SendMessage(chatId, substring);
                 sendMessage.setReplyMarkup(initKeyboard());
-                sendMessages.add(sendMessage);
+                sendObjects.add(sendMessage);
             }
 
-            if (sendMessages.size() > 5) {
-                sendMessages.subList(0, sendMessages.size() - 5).clear();
+            if (sendObjects.size() > 5) {
+                sendObjects.subList(0, sendObjects.size() - 5).clear();
             }
         }
 
@@ -159,7 +159,7 @@ public class LogsCommand extends Command {
     }
 
     @Override
-    public SendMessage[] getSendMessages() {
-        return sendMessages.toArray(new SendMessage[sendMessages.size()]);
+    public Object[] getSendObjects() {
+        return sendObjects.toArray(new Object[sendObjects.size()]);
     }
 }

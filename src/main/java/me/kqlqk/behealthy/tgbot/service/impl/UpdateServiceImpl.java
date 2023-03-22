@@ -139,6 +139,18 @@ public class UpdateServiceImpl implements UpdateService {
                 answer;
     }
 
+    private Object handleCallbackQuery(Update update, TelegramUser tgUser) {
+        if (!update.hasCallbackQuery()) {
+            return null;
+        }
+
+        if (update.getCallbackQuery().getData().startsWith("AddFoodCommand_")) {
+            return handleAndReturnSendObject(update, tgUser, "addFoodCommand", AddFoodCommand.class, new AccessTokenDTO());
+        }
+
+        return null;
+    }
+
     private Object choosingForInactiveUsers(Update update, TelegramUser tgUser) {
         String userMessage = update.getMessage().getText().toLowerCase();
 
@@ -244,6 +256,7 @@ public class UpdateServiceImpl implements UpdateService {
                 return handleAndReturnSendObject(update, tgUser, "loginCommand", LoginCommand.class);
 
             case ADD_FOOD_WAIT_FOR_DATA:
+            case ADD_FOOD_WAIT_FOR_DATA_CALLBACK:
                 return handleAndReturnSendObject(update, tgUser, "addFoodCommand", AddFoodCommand.class, new AccessTokenDTO());
 
             case CHANGE_KCAL_GOAL_WAIT_FOR_CHOOSING:

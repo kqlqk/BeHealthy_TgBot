@@ -25,7 +25,7 @@ import java.util.List;
 @Slf4j
 public class SendMessageCommand extends Command {
     private SendMessage sendMessage;
-    private final List<SendMessage> sendMessages;
+    private final List<Object> sendObjects;
 
     private final TelegramUserService telegramUserService;
     private final ChatIdService chatIdService;
@@ -34,7 +34,7 @@ public class SendMessageCommand extends Command {
     public SendMessageCommand(TelegramUserService telegramUserService, ChatIdService chatIdService) {
         this.telegramUserService = telegramUserService;
         this.chatIdService = chatIdService;
-        sendMessages = new ArrayList<>();
+        sendObjects = new ArrayList<>();
     }
 
     @SecurityCheck
@@ -69,7 +69,7 @@ public class SendMessageCommand extends Command {
                     sendMessage.setReplyMarkup(AdminMenu.initKeyboard());
                 }
 
-                sendMessages.add(sendMessage);
+                sendObjects.add(sendMessage);
             }
 
             tgUser.setCommandSate(CommandState.BASIC);
@@ -91,7 +91,7 @@ public class SendMessageCommand extends Command {
     }
 
     @Override
-    public SendMessage[] getSendMessages() {
-        return sendMessages.toArray(new SendMessage[sendMessages.size()]);
+    public Object[] getSendObjects() {
+        return sendObjects.toArray(new Object[sendObjects.size()]);
     }
 }
