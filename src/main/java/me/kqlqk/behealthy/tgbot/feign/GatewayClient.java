@@ -37,14 +37,20 @@ public interface GatewayClient {
     @PutMapping("/api/v1/users/{id}/condition")
     void updateUserCondition(@PathVariable long id, @RequestBody AddUpdateUserConditionDTO updateConditionDTO, @RequestHeader String authorization);
 
+    @GetMapping("/api/v1/users/{id}/food/all")
+    List<GetDailyAteFoodDTO> getAllDailyAteFoods(@PathVariable long id, @RequestHeader String authorization);
+
     @GetMapping("/api/v1/users/{id}/food")
-    List<GetDailyAteFoodDTO> getDailyAteFoods(@PathVariable long id, @RequestHeader String authorization);
+    GetDailyAteFoodDTO getDailyAteFoods(@PathVariable long id, @RequestParam String productName, @RequestHeader String authorization);
 
     @PostMapping("/api/v1/users/{id}/food")
     void saveDailyAteFood(@PathVariable long id, @RequestBody AddDailyAteFoodDTO addDailyAteFoodDTO, @RequestHeader String authorization);
 
+    @PutMapping("/api/v1/users/{id}/food")
+    void updateDailyAteFood(@PathVariable long id, @RequestBody AddDailyAteFoodDTO addDailyAteFoodDTO, @RequestHeader String authorization);
+
     @DeleteMapping("/api/v1/users/{id}/food")
-    void deleteDailyAteFood(@PathVariable long id, @RequestParam long productId, @RequestHeader String authorization);
+    void deleteDailyAteFood(@PathVariable long id, @RequestParam String productName, @RequestHeader String authorization);
 
     @GetMapping("/api/v1/users/{id}/kcal")
     GetUserKcalDTO getUserKcal(@PathVariable long id, @RequestHeader String authorization);

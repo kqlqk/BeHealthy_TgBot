@@ -104,6 +104,12 @@ public class CustomErrorDecoder implements ErrorDecoder {
         else if (errorMessage.matches("DailyAteFood with userId = [^ ]{1,50} not found")) {
             errorMessage = "Daily ate food not found. Probably you didn't add it";
         }
+        else if (errorMessage.matches("DailyAteFood with name = [^ ]{1,50} and userId = [^ ]{1,50} not found")) {
+            errorMessage = "Daily ate food not found. Probably you didn't add it";
+        }
+        else if (errorMessage.matches("DailyAteFood with name = [^ ]{1,50} and userId = [^ ]{1,50} already exists")) {
+            errorMessage = "Daily ate food already exists.";
+        }
         else if (errorMessage.matches("Weight should be > 0")) {
             errorMessage = "Weight should be greater than 0";
         }
@@ -127,9 +133,6 @@ public class CustomErrorDecoder implements ErrorDecoder {
         }
         else if (errorMessage.matches("Carb should be < 100")) {
             errorMessage = "Carb should be less than 100";
-        }
-        else if (errorMessage.matches("DailyAteFood with id = [^ ]{1,50} not found for user with userId = [^ ]{1,50}")) {
-            errorMessage = "You don't have that food";
         }
         else if (errorMessage.matches("WorkoutInfos with userId = [^ ]{1,50} not found")) {
             errorMessage = "Workout not found";
