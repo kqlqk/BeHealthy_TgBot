@@ -40,22 +40,32 @@ public class SecurityAspect {
                 update = (Update) arg;
                 break;
             }
-            else {
-                IllegalArgumentException e = new IllegalArgumentException("Class instance of Update not found");
-
-                log.error("Update not found", e);
-
-                throw e;
-            }
         }
 
-        TelegramUser tgUser = telegramUserService.getByTelegramId(update.getMessage().getFrom().getId());
+        if (update == null) {
+            BadUserDataException e = new BadUserDataException("Update is null");
+            log.warn("Update is null", e);
+            throw e;
+        }
+
+        long tgId;
+        if (update.hasMessage()) {
+            tgId = update.getMessage().getFrom().getId();
+        }
+        else if (update.hasCallbackQuery()) {
+            tgId = update.getCallbackQuery().getFrom().getId();
+        }
+        else {
+            BadUserDataException e = new BadUserDataException("There is no message or callbackQuery");
+            log.error("Update exception", e);
+            throw e;
+        }
+
+        TelegramUser tgUser = telegramUserService.getByTelegramId(tgId);
 
         if (!tgUserAndFieldsNotNull(tgUser)) {
             NoRightsException e = new NoRightsException("You have no rights to do this");
-
             log.warn("Bad telegram user", e);
-
             throw e;
         }
     }
@@ -72,8 +82,9 @@ public class SecurityAspect {
         }
 
         if (tgUser == null) {
-            log.warn("Telegram user is null");
-            throw new BadUserDataException("Telegram user is null");
+            BadUserDataException e = new BadUserDataException("Telegram user is null");
+            log.warn("Telegram user is null", e);
+            throw e;
         }
 
         Object[] modifiedArgs = proceedingJoinPoint.getArgs();

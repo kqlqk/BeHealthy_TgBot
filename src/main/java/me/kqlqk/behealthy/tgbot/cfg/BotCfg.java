@@ -9,6 +9,8 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
@@ -70,18 +72,28 @@ public class BotCfg extends TelegramLongPollingBot {
 
     private void sendSth(Object answer) {
         try {
-            if (answer instanceof SendMessage) {
-                execute((SendMessage) answer);
-            }
-            else if (answer instanceof SendMessage[]) {
-                for (SendMessage s : (SendMessage[]) answer) {
-                    execute(s);
+            if (answer instanceof Object[]) {
+                for (Object a : (Object[]) answer) {
+                    send(a);
                 }
             }
+            send(answer);
         }
         catch (TelegramApiException e) {
             log.error("Something went wrong: ", e);
             throw new RuntimeException(e);
+        }
+    }
+
+    private void send(Object obj) throws TelegramApiException {
+        if (obj instanceof SendMessage) {
+            execute((SendMessage) obj);
+        }
+        else if (obj instanceof EditMessageText) {
+            execute((EditMessageText) obj);
+        }
+        else if (obj instanceof DeleteMessage) {
+            execute((DeleteMessage) obj);
         }
     }
 

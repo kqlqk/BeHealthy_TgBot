@@ -56,12 +56,21 @@ public class UpdateServiceImpl implements UpdateService {
 
     @Override
     public Object handle(Update update) {
-        if (!update.hasMessage()) {
+        long tgId;
+        String chatId;
+
+        if (!update.hasMessage() && !update.hasCallbackQuery()) {
             return null;
         }
 
-        long tgId = update.getMessage().getFrom().getId();
-        String chatId = update.getMessage().getChatId().toString();
+        if (update.hasMessage()) {
+            tgId = update.getMessage().getFrom().getId();
+            chatId = update.getMessage().getChatId().toString();
+        }
+        else {
+            tgId = update.getCallbackQuery().getFrom().getId();
+            chatId = update.getCallbackQuery().getMessage().getChatId().toString();
+        }
 
         if (!telegramUserService.existsByTelegramId(tgId)) {
             TelegramUser newTgUser = new TelegramUser();
@@ -103,6 +112,10 @@ public class UpdateServiceImpl implements UpdateService {
 
                 return sendMessage;
             }
+        }
+
+        if (update.hasCallbackQuery()) {
+            return handleCallbackQuery(update, tgUser);
         }
 
         if (BackCommand.getNames().contains(update.getMessage().getText().toLowerCase())) {
@@ -290,7 +303,10 @@ public class UpdateServiceImpl implements UpdateService {
 
         command.handle(update, tgUser);
 
-        return (command.getSendMessages() == null || command.getSendMessages().length == 0) ? command.getSendMessage() : command.getSendMessages();
+        if (command.getSendObjects() != null && command.getSendObjects().length != 0) {
+            return command.getSendObjects();
+        }
+        return command.getSendMessage();
     }
 
     private <T> Object handleAndReturnSendObject(Update update,
@@ -302,6 +318,9 @@ public class UpdateServiceImpl implements UpdateService {
 
         command.handle(update, tgUser, accessTokenDTO, SecurityState.OK);
 
-        return (command.getSendMessages() == null || command.getSendMessages().length == 0) ? command.getSendMessage() : command.getSendMessages();
+        if (command.getSendObjects() != null && command.getSendObjects().length != 0) {
+            return command.getSendObjects();
+        }
+        return command.getSendMessage();
     }
 }

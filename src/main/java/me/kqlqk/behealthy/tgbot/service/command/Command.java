@@ -66,8 +66,7 @@ public abstract class Command {
         return null;
     }
 
-
-    public SendMessage[] getSendMessages() {
+    public Object[] getSendObjects() {
         return null;
     }
 }
