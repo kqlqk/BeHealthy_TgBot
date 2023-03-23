@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
@@ -51,7 +52,7 @@ public class KcalsTrackerMenu extends Command {
 
         getFoodCommand.handle(update, tgUser, accessTokenDTO, securityState);
         sendMessage = getFoodCommand.getSendMessage();
-        if (sendMessage.getReplyMarkup() == null) {
+        if (sendMessage.getReplyMarkup() == null || sendMessage.getReplyMarkup() instanceof InlineKeyboardMarkup) {
             sendMessage.setReplyMarkup(initKeyboard());
         }
     }
@@ -89,7 +90,6 @@ public class KcalsTrackerMenu extends Command {
 
         return res;
     }
-
 
     @Override
     public SendMessage getSendMessage() {

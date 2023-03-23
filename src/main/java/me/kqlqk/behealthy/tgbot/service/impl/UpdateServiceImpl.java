@@ -148,6 +148,10 @@ public class UpdateServiceImpl implements UpdateService {
             return handleAndReturnSendObject(update, tgUser, "addFoodCommand", AddFoodCommand.class, new AccessTokenDTO());
         }
 
+        if (update.getCallbackQuery().getData().startsWith("GetFoodCommand_")) {
+            return handleAndReturnSendObject(update, tgUser, "getFoodCommand", GetFoodCommand.class, new AccessTokenDTO());
+        }
+
         return null;
     }
 

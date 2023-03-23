@@ -19,7 +19,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
 import java.util.ArrayList;
@@ -31,6 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class GetFoodCommand extends Command {
     private SendMessage sendMessage;
+    private final List<Object> sendObjects;
 
     private final TelegramUserService telegramUserService;
     private final GatewayClient gatewayClient;
@@ -39,12 +42,19 @@ public class GetFoodCommand extends Command {
     public GetFoodCommand(TelegramUserService telegramUserService, GatewayClient gatewayClient) {
         this.telegramUserService = telegramUserService;
         this.gatewayClient = gatewayClient;
+        this.sendObjects = new ArrayList<>();
     }
 
     @SecurityCheck
     @Override
     public void handle(Update update, TelegramUser tgUser, AccessTokenDTO accessTokenDTO, SecurityState securityState) {
-        String chatId = update.getMessage().getChatId().toString();
+        String chatId;
+        if (update.hasCallbackQuery()) {
+            chatId = update.getCallbackQuery().getMessage().getChatId().toString();
+        }
+        else {
+            chatId = update.getMessage().getChatId().toString();
+        }
 
         if (securityState == SecurityState.SHOULD_RELOGIN) {
             sendMessage = new SendMessage(chatId, "Sorry, you should sign in again");
@@ -57,10 +67,14 @@ public class GetFoodCommand extends Command {
             return;
         }
 
+        if (update.hasCallbackQuery()) {
+            handleCallBackQuery(update, tgUser, accessTokenDTO);
+            return;
+        }
+
         GetUserConditionDTO getUserConditionDTO = null;
         GetUserKcalDTO getUserKcalDTO = null;
         GeneralKcals generalKcals = new GeneralKcals();
-
         try {
             getUserKcalDTO = gatewayClient.getUserKcal(tgUser.getUserId(), accessTokenDTO.getAccessToken());
         }
@@ -153,6 +167,7 @@ public class GetFoodCommand extends Command {
 
         sendMessage = new SendMessage(chatId, generateText(getDailyAteFoodDTOs, generalKcals));
         sendMessage.enableHtml(true);
+        sendMessage.setReplyMarkup(inlineKeyboard());
     }
 
     private ReplyKeyboardMarkup kcalKeyboard() {
@@ -174,6 +189,68 @@ public class GetFoodCommand extends Command {
         return keyboard;
     }
 
+    private InlineKeyboardMarkup inlineKeyboard() {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        List<InlineKeyboardButton> row = new ArrayList<>();
+
+        InlineKeyboardButton button = new InlineKeyboardButton("More info");
+        button.setCallbackData("GetFoodCommand_" + "MoreInfo");
+
+        row.add(button);
+        rows.add(row);
+
+        inlineKeyboardMarkup.setKeyboard(rows);
+
+        return inlineKeyboardMarkup;
+    }
+
+    private void handleCallBackQuery(Update update, TelegramUser tgUser, AccessTokenDTO accessTokenDTO) {
+        String chatId = update.getCallbackQuery().getMessage().getChatId().toString();
+
+        List<GetDailyAteFoodDTO> getDailyAteFoodDTOs;
+        try {
+            getDailyAteFoodDTOs = gatewayClient.getAllDailyAteFoods(tgUser.getUserId(), accessTokenDTO.getAccessToken());
+        }
+        catch (RuntimeException e) {
+            sendMessage = new SendMessage(chatId, e.getMessage());
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder("<b>Detailed information:</b>\n");
+
+        for (GetDailyAteFoodDTO getDailyAteFoodDTO : getDailyAteFoodDTOs) {
+            sb.append("Name: <b>");
+            sb.append(getDailyAteFoodDTO.getName());
+            sb.append("</b>\n");
+            sb.append("Weight: <b>");
+            sb.append(getDailyAteFoodDTO.getWeight());
+            sb.append("</b> g.\n");
+            sb.append("Kilocalories: <b>");
+            sb.append(getDailyAteFoodDTO.getKcal());
+            sb.append("</b>\n");
+            sb.append("Proteins: <b>");
+            sb.append(getDailyAteFoodDTO.getProtein());
+            sb.append("</b> g.\n");
+            sb.append("Fats: <b>");
+            sb.append(getDailyAteFoodDTO.getFat());
+            sb.append("</b> g.\n");
+            sb.append("Carbs: <b>");
+            sb.append(getDailyAteFoodDTO.getCarb());
+            sb.append("</b> g.\n\n");
+        }
+
+        for (int i = 0; i < sb.length(); i += 4000) {
+            int endIndex = Math.min(sb.length(), i + 4000);
+            String substring = sb.substring(i, endIndex);
+
+            SendMessage sendMessage = new SendMessage(chatId, substring);
+            sendMessage.enableHtml(true);
+            sendObjects.add(sendMessage);
+        }
+
+    }
+
     private String generateText(List<GetDailyAteFoodDTO> getDailyAteFoodDTOs, GeneralKcals max) {
         AtomicInteger ateKcals = new AtomicInteger();
         getDailyAteFoodDTOs.forEach(e -> ateKcals.addAndGet(e.getKcal()));
@@ -193,43 +270,55 @@ public class GetFoodCommand extends Command {
 
             int maxNameLength = 7;
             if (getDailyAteFoodDTO.getName().length() > maxNameLength) {
-                text.append("| " + getDailyAteFoodDTO.getName().substring(0, maxNameLength) + " | ");
+                text.append("| ");
+                text.append(getDailyAteFoodDTO.getName(), 0, maxNameLength);
+                text.append(" | ");
             }
             else {
                 int remainingLength = maxNameLength - getDailyAteFoodDTO.getName().length();
 
-                text.append("| " + getDailyAteFoodDTO.getName());
-                text.append(" ".repeat(remainingLength) + " | ");
+                text.append("| ");
+                text.append(getDailyAteFoodDTO.getName());
+                text.append(" ".repeat(remainingLength));
+                text.append(" | ");
             }
 
             int maxKcalLength = 8;
             String kcalsString = String.valueOf(getDailyAteFoodDTO.getKcal());
             if (kcalsString.length() > maxKcalLength) {
-                text.append(kcalsString.substring(0, maxKcalLength) + " | ");
+                text.append(kcalsString, 0, maxKcalLength);
+                text.append(" | ");
             }
             else {
                 int remainingLength = maxKcalLength - kcalsString.length();
 
                 text.append(kcalsString);
-                text.append(" ".repeat(remainingLength) + " | ");
+                text.append(" ".repeat(remainingLength));
+                text.append(" | ");
             }
 
             int maxWeightLength = 6;
             String weightString = String.valueOf(getDailyAteFoodDTO.getWeight());
             if (weightString.length() > maxWeightLength) {
-                text.append(weightString.substring(0, maxWeightLength) + " | ");
+                text.append(weightString, 0, maxWeightLength);
+                text.append(" | ");
             }
             else {
                 int remainingLength = maxWeightLength - weightString.length();
 
                 text.append(weightString);
-                text.append(" ".repeat(remainingLength) + " |\n");
+                text.append(" ".repeat(remainingLength));
+                text.append(" |\n");
             }
 
         }
 
         text.append(" - - - - - - - - - - - - - - - \n</pre>");
-        text.append("<b>Your progress: " + ateKcals + " in " + maxKcals + " kilocalories</b>");
+        text.append("<b>Your progress: ");
+        text.append(ateKcals);
+        text.append(" in ");
+        text.append(maxKcals);
+        text.append(" kilocalories</b>");
 
         return text.toString();
     }
@@ -246,6 +335,11 @@ public class GetFoodCommand extends Command {
     @Override
     public SendMessage getSendMessage() {
         return sendMessage;
+    }
+
+    @Override
+    public Object[] getSendObjects() {
+        return sendObjects.toArray(new Object[sendObjects.size()]);
     }
 
     @Data

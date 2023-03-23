@@ -194,8 +194,6 @@ public class AddFoodCommand extends Command {
                 return;
             }
 
-            Maps.removeUserIdAddFoodCallback(tgUser.getUserId());
-
             addDailyAteFoodDTO.setWeight(weight);
 
             try {
@@ -206,6 +204,8 @@ public class AddFoodCommand extends Command {
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }
+
+            Maps.removeUserIdAddFoodCallback(tgUser.getUserId());
 
             tgUser.setCommandSate(CommandState.BASIC);
             telegramUserService.update(tgUser);
