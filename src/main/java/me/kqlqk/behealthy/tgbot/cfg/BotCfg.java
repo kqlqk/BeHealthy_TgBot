@@ -69,7 +69,6 @@ public class BotCfg extends TelegramLongPollingBot {
         }
     }
 
-
     private void sendSth(Object answer) {
         try {
             if (answer instanceof Object[]) {

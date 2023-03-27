@@ -9,6 +9,7 @@ import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
 import me.kqlqk.behealthy.tgbot.service.command.Command;
 import me.kqlqk.behealthy.tgbot.service.command.CommandState;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -25,12 +26,12 @@ import java.util.List;
 @Scope("prototype")
 @Slf4j
 public class LogsCommand extends Command {
+    @Value("${logs.dir}")
+    private String BASE_DIRECTORY;
+
     private SendMessage sendMessage;
     private final List<Object> sendObjects;
-
     private final TelegramUserService telegramUserService;
-
-    private final static String BASE_DIRECTORY = "/home/kqlqk/logs";
 
     @Autowired
     public LogsCommand(TelegramUserService telegramUserService) {
