@@ -4,37 +4,50 @@ import lombok.extern.slf4j.Slf4j;
 import me.kqlqk.behealthy.tgbot.aop.SecurityCheck;
 import me.kqlqk.behealthy.tgbot.aop.SecurityState;
 import me.kqlqk.behealthy.tgbot.dto.auth_service.AccessTokenDTO;
-import me.kqlqk.behealthy.tgbot.dto.user_condition_service.GetUserConditionDTO;
+import me.kqlqk.behealthy.tgbot.dto.user_condition_service.FullUserPhotoDTO;
 import me.kqlqk.behealthy.tgbot.feign.GatewayClient;
 import me.kqlqk.behealthy.tgbot.model.TelegramUser;
 import me.kqlqk.behealthy.tgbot.service.TelegramUserService;
 import me.kqlqk.behealthy.tgbot.service.command.Command;
 import me.kqlqk.behealthy.tgbot.service.command.CommandState;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
 
 @Service
 @Scope("prototype")
 @Slf4j
-public class GetBodyConditionCommand extends Command {
+public class TrackChangesCommand extends Command {
+    @Value("${files.tmp.dir}")
+    private String dir;
+
     private SendMessage sendMessage;
+    private final List<Object> sendObjects;
 
     private final TelegramUserService telegramUserService;
     private final GatewayClient gatewayClient;
 
     @Autowired
-    public GetBodyConditionCommand(TelegramUserService telegramUserService, GatewayClient gatewayClient) {
+    public TrackChangesCommand(TelegramUserService telegramUserService, GatewayClient gatewayClient) {
         this.telegramUserService = telegramUserService;
         this.gatewayClient = gatewayClient;
+        sendObjects = new ArrayList<>();
     }
 
     @SecurityCheck
@@ -56,35 +69,60 @@ public class GetBodyConditionCommand extends Command {
         tgUser.setCommandSate(CommandState.RETURN_TO_BODY_CONDITION_MENU);
         telegramUserService.update(tgUser);
 
-        GetUserConditionDTO getUserConditionDTO;
+        List<FullUserPhotoDTO> fullUserPhotoDTOs;
         try {
-            getUserConditionDTO = gatewayClient.getUserCondition(tgUser.getUserId(), accessTokenDTO.getAccessToken());
+            fullUserPhotoDTOs = gatewayClient.getAllUserPhotosAndFiles(tgUser.getUserId(), accessTokenDTO.getAccessToken());
         }
         catch (RuntimeException e) {
-            if (!e.getMessage().equals("Condition not found. Check, if you have your body's condition")) {
-                log.error("Something went wrong", e);
-
+            if (!e.getMessage().equalsIgnoreCase("Photos not found")) {
                 sendMessage = new SendMessage(chatId, e.getMessage());
+                log.error("Something went wrong", e);
                 return;
             }
 
-            sendMessage = new SendMessage(chatId, "Please, set your body condition");
-            sendMessage.setReplyMarkup(setConditionKeyboard());
-
+            sendMessage = new SendMessage(chatId, "Add your first photo");
+            sendMessage.setReplyMarkup(addFirstPhoto());
             return;
         }
 
-        sendMessage = new SendMessage(chatId, generateText(getUserConditionDTO));
-        sendMessage.enableHtml(true);
-        sendMessage.setReplyMarkup(initKeyboard());
+        fullUserPhotoDTOs.sort(Comparator.comparing(FullUserPhotoDTO::getPhotoDate));
+
+        FullUserPhotoDTO photo = fullUserPhotoDTOs.get(fullUserPhotoDTOs.size() - 1);
+
+        byte[] decodedBytes = Base64.getDecoder().decode(photo.getEncodedPhoto());
+
+        String[] filePath = photo.getPhotoPath().split("/");
+        String fileName = filePath[filePath.length - 1];
+
+        File file;
+        try {
+            file = new File(dir + "/" + fileName);
+            FileUtils.writeByteArrayToFile(file, decodedBytes);
+            file.createNewFile();
+        }
+        catch (IOException e) {
+            sendMessage = new SendMessage(chatId, "Something went wrong");
+            sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
+
+            log.error("Something went wrong", e);
+            return;
+        }
+
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+
+        SendPhoto sendPhoto = new SendPhoto(chatId, new InputFile(file));
+        sendPhoto.setCaption("This photo was taken " + dateFormat.format(photo.getPhotoDate()));
+        sendPhoto.setReplyMarkup(initKeyboard(Optional.of(photo.getPhotoDate())));
+
+        sendObjects.add(sendPhoto);
     }
 
-    private static ReplyKeyboardMarkup setConditionKeyboard() {
+    private static ReplyKeyboardMarkup addFirstPhoto() {
         ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
         KeyboardRow keyboardRow = new KeyboardRow();
-        keyboardRow.add("Set condition");
+        keyboardRow.add("Add photo");
         keyboardRows.add(keyboardRow);
 
         keyboardRow = new KeyboardRow();
@@ -96,12 +134,23 @@ public class GetBodyConditionCommand extends Command {
         return keyboard;
     }
 
-    private static ReplyKeyboardMarkup initKeyboard() {
+    public static ReplyKeyboardMarkup initKeyboard(Optional<Date> lastPhotoDate) {
         ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
         KeyboardRow keyboardRow = new KeyboardRow();
-        keyboardRow.add("Change condition");
+
+        if (lastPhotoDate.isPresent()) {
+            LocalDateTime localDateTime = LocalDateTime.ofInstant(lastPhotoDate.get().toInstant(), ZoneId.systemDefault());
+
+            if (LocalDateTime.now().isAfter(localDateTime.plusMonths(1))) {
+                keyboardRow.add("Add next photo");
+                keyboardRows.add(keyboardRow);
+            }
+        }
+
+        keyboardRow = new KeyboardRow();
+        keyboardRow.add("Load old photos");
         keyboardRows.add(keyboardRow);
 
         keyboardRow = new KeyboardRow();
@@ -111,67 +160,13 @@ public class GetBodyConditionCommand extends Command {
         keyboard.setKeyboard(keyboardRows);
         keyboard.setResizeKeyboard(true);
         return keyboard;
-    }
-
-    private String generateText(GetUserConditionDTO getUserConditionDTO) {
-        StringBuilder text = new StringBuilder("<b>Your body:</b>\n");
-        text.append("<pre>Gender: " + StringUtils.capitalize(getUserConditionDTO.getGender().toLowerCase()) + "\n");
-        text.append("Age: " + getUserConditionDTO.getAge() + " y.o.\n");
-        text.append("Weight: " + getUserConditionDTO.getWeight() + " kg.\n");
-        text.append("Fat: " + getUserConditionDTO.getFatPercent() + " %\n");
-        text.append("Goal: " + setStringGoal(getUserConditionDTO.getGoal()) + "\n");
-        text.append("Activity: " + setStringActivity(getUserConditionDTO.getActivity()) + "</pre>\n\n");
-        text.append("<b>Recommended kilocalories:</b>\n");
-
-        int protein = getUserConditionDTO.getDailyKcalDTO().getProtein();
-        int fat = getUserConditionDTO.getDailyKcalDTO().getFat();
-        int carb = getUserConditionDTO.getDailyKcalDTO().getCarb();
-
-        text.append("<pre>Kilocalories: " + (protein * 4 + fat * 9 + carb * 4) + "\n");
-        text.append("Protein: " + protein + " g.\n");
-        text.append("Fat: " + fat + " g.\n");
-        text.append("Carb: " + carb + " g.</pre>\n");
-
-        return text.toString();
-    }
-
-    private String setStringGoal(String goal) {
-        switch (goal) {
-            case "LOSE":
-                return "Lose weight";
-
-            case "MAINTAIN":
-                return "Maintain current weight";
-
-            case "GAIN":
-                return "Gain weight";
-
-            default:
-                return "";
-        }
-    }
-
-    private String setStringActivity(String activity) {
-        switch (activity) {
-            case "MIN":
-                return "Minimal activity";
-
-            case "AVG":
-                return "2-3 activities per week";
-
-            case "MAX":
-                return "4-6 activities per week";
-
-            default:
-                return "";
-        }
     }
 
     public static List<String> getNames() {
         List<String> res = new ArrayList<>();
-        res.add("body condition \uD83D\uDD76");
-        res.add("body condition");
-        res.add("/get_body_condition");
+        res.add("track my changes \uD83D\uDCC8");
+        res.add("track my changes");
+        res.add("/track_my_changes");
 
         return res;
     }
@@ -180,5 +175,10 @@ public class GetBodyConditionCommand extends Command {
     @Override
     public SendMessage getSendMessage() {
         return sendMessage;
+    }
+
+    @Override
+    public Object[] getSendObjects() {
+        return sendObjects.toArray(new Object[sendObjects.size()]);
     }
 }

@@ -59,7 +59,7 @@ public class BodyConditionMenu extends Command {
         keyboardRows.add(keyboardRow);
 
         keyboardRow = new KeyboardRow();
-        keyboardRow.add("Tracking my changes \uD83D\uDCC8");
+        keyboardRow.add("Track my changes \uD83D\uDCC8");
         keyboardRows.add(keyboardRow);
 
         keyboardRow = new KeyboardRow();

@@ -185,6 +185,15 @@ public class CustomErrorDecoder implements ErrorDecoder {
         else if (errorMessage.matches("Exercise with exerciseName = [^ ]{1,50} for user with userId = [^ ]{1,50} not found")) {
             errorMessage = "Exercise with that name not found";
         }
+        else if (errorMessage.matches("UserPhoto with userId = [^ ]{1,50} and date = [^ ]{1,50} not found")) {
+            errorMessage = "Photo not found";
+        }
+        else if (errorMessage.matches("UserPhotos with userId = [^ ]{1,50} not found")) {
+            errorMessage = "Photos not found";
+        }
+        else if (errorMessage.matches("UserPhoto with userId = [^ ]{1,50} and photoDate = [^ ]{1,50} already exists")) {
+            errorMessage = "Photo already exists";
+        }
         else {
             log.error("Unhandled exception: " + errorMessage);
             errorMessage = "Something went wrong";

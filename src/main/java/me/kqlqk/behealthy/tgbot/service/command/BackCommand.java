@@ -8,7 +8,6 @@ import me.kqlqk.behealthy.tgbot.service.command.admin_menu.AdminMenu;
 import me.kqlqk.behealthy.tgbot.service.command.body_condition_menu.BodyConditionMenu;
 import me.kqlqk.behealthy.tgbot.service.command.kcals_tracker.KcalsTrackerMenu;
 import me.kqlqk.behealthy.tgbot.service.command.workout_service.WorkoutServiceMenu;
-import me.kqlqk.behealthy.tgbot.service.command.workout_service.commands.GetUserWorkoutCommand;
 import me.kqlqk.behealthy.tgbot.util.Maps;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
@@ -28,12 +27,10 @@ public class BackCommand extends Command {
 
     private final TelegramUserService telegramUserService;
     private final KcalsTrackerMenu kcalsTrackerMenu;
-    private final GetUserWorkoutCommand getUserWorkoutCommand;
 
-    public BackCommand(TelegramUserService telegramUserService, KcalsTrackerMenu kcalsTrackerMenu, GetUserWorkoutCommand getUserWorkoutCommand) {
+    public BackCommand(TelegramUserService telegramUserService, KcalsTrackerMenu kcalsTrackerMenu) {
         this.telegramUserService = telegramUserService;
         this.kcalsTrackerMenu = kcalsTrackerMenu;
-        this.getUserWorkoutCommand = getUserWorkoutCommand;
         this.sendObjects = new ArrayList<>();
     }
 
@@ -58,6 +55,7 @@ public class BackCommand extends Command {
             case CHANGE_KCAL_GOAL_WAIT_FOR_CHOOSING:
             case CHANGE_KCAL_GOAL_WAIT_FOR_CHOOSING_KCAL:
             case CHANGE_KCAL_WAIT_FOR_DATA:
+            case ADD_FOOD_WAIT_FOR_DATA_CALLBACK:
                 kcalsTrackerMenu.handle(update, tgUser, new AccessTokenDTO(), SecurityState.OK);
                 sendMessage = kcalsTrackerMenu.getSendMessage();
                 sendMessage.setReplyMarkup(KcalsTrackerMenu.initKeyboard());
@@ -69,19 +67,15 @@ public class BackCommand extends Command {
             case SET_BODY_CONDITION_WAIT_FOR_ACTIVITY:
             case SET_BODY_CONDITION_WAIT_FOR_GOAL:
             case SET_BODY_CONDITION_WAIT_FOR_DATA:
+            case WAIT_FOR_PHOTO:
                 sendMessage.setReplyMarkup(BodyConditionMenu.initKeyboard());
                 break;
 
             case RETURN_TO_WORKOUT_SERVICE_MENU:
             case SET_WORKOUT_WAIT_FOR_DATA:
-                sendMessage.setReplyMarkup(WorkoutServiceMenu.initKeyboard());
-                break;
-
             case ADD_EXERCISE_WAIT_FOR_DATA:
             case REMOVE_EXERCISE_WAIT_FOR_DATA:
-                getUserWorkoutCommand.handle(update, tgUser, new AccessTokenDTO(), SecurityState.OK);
-                sendMessage = getUserWorkoutCommand.getSendMessage();
-                sendMessage.setReplyMarkup(GetUserWorkoutCommand.initKeyboard());
+                sendMessage.setReplyMarkup(WorkoutServiceMenu.initKeyboard());
                 break;
 
             case LOGS_WAIT_FOR_CHOOSING:

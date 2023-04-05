@@ -18,8 +18,7 @@ import me.kqlqk.behealthy.tgbot.service.command.admin_menu.AdminMenu;
 import me.kqlqk.behealthy.tgbot.service.command.admin_menu.commands.LogsCommand;
 import me.kqlqk.behealthy.tgbot.service.command.admin_menu.commands.SendMessageCommand;
 import me.kqlqk.behealthy.tgbot.service.command.body_condition_menu.BodyConditionMenu;
-import me.kqlqk.behealthy.tgbot.service.command.body_condition_menu.commands.GetBodyConditionCommand;
-import me.kqlqk.behealthy.tgbot.service.command.body_condition_menu.commands.SetBodyConditionCommand;
+import me.kqlqk.behealthy.tgbot.service.command.body_condition_menu.commands.*;
 import me.kqlqk.behealthy.tgbot.service.command.guest_menu.DefaultGuestCommand;
 import me.kqlqk.behealthy.tgbot.service.command.guest_menu.LoginCommand;
 import me.kqlqk.behealthy.tgbot.service.command.guest_menu.RegistrationCommand;
@@ -118,6 +117,14 @@ public class UpdateServiceImpl implements UpdateService {
             return handleCallbackQuery(update, tgUser);
         }
 
+        if (update.getMessage().hasPhoto() && tgUser.getCommandSate() == CommandState.WAIT_FOR_PHOTO) {
+            return handleAndReturnSendObject(update, tgUser, "addPhotoCommand", AddPhotoCommand.class, new AccessTokenDTO());
+        }
+
+        if (!update.getMessage().hasText()) {
+            return null;
+        }
+
         if (BackCommand.getNames().contains(update.getMessage().getText().toLowerCase())) {
             return handleAndReturnSendObject(update, tgUser, "backCommand", BackCommand.class);
         }
@@ -213,6 +220,18 @@ public class UpdateServiceImpl implements UpdateService {
             return handleAndReturnSendObject(update, tgUser, "setBodyConditionCommand", SetBodyConditionCommand.class, new AccessTokenDTO());
         }
 
+        if (TrackChangesCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "trackChangesCommand", TrackChangesCommand.class, new AccessTokenDTO());
+        }
+
+        if (AddPhotoCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "addPhotoCommand", AddPhotoCommand.class, new AccessTokenDTO());
+        }
+
+        if (LoadOldPhotosCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObject(update, tgUser, "loadOldPhotosCommand", LoadOldPhotosCommand.class, new AccessTokenDTO());
+        }
+
 
         if (WorkoutServiceMenu.getNames().contains(userMessage)) {
             return handleAndReturnSendObject(update, tgUser, "workoutServiceMenu", WorkoutServiceMenu.class, new AccessTokenDTO());
@@ -283,6 +302,9 @@ public class UpdateServiceImpl implements UpdateService {
 
             case REMOVE_EXERCISE_WAIT_FOR_DATA:
                 return handleAndReturnSendObject(update, tgUser, "removeExerciseFromUserWorkoutCommand", RemoveExerciseFromUserWorkoutCommand.class, new AccessTokenDTO());
+
+            case WAIT_FOR_PHOTO:
+                return handleAndReturnSendObject(update, tgUser, "addPhotoCommand", AddPhotoCommand.class, new AccessTokenDTO());
         }
 
         return null;

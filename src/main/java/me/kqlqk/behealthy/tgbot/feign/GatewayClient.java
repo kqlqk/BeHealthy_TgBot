@@ -88,4 +88,15 @@ public interface GatewayClient {
 
     @DeleteMapping("/api/v1/users/{id}/workout/user")
     void removeExercise(@PathVariable long id, @RequestParam String exerciseName, @RequestHeader String authorization);
+
+
+    @GetMapping("/api/v1/users/{id}/photo")
+    GetEncodedPhoto getUserEncodedPhotoByDate(@PathVariable long id, @RequestParam String date, @RequestHeader String authorization);
+
+    @GetMapping("/api/v1/users/{id}/photo/all")
+    List<FullUserPhotoDTO> getAllUserPhotosAndFiles(@PathVariable long id, @RequestHeader String authorization);
+
+    @PostMapping("/api/v1/users/{id}/photo")
+    void saveUserPhoto(@PathVariable long id, @RequestBody AddUserPhotoDTO addUserPhotoDTO, @RequestHeader String authorization);
+
 }
