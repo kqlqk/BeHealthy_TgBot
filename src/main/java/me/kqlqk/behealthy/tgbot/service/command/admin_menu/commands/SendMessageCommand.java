@@ -24,7 +24,7 @@ import java.util.List;
 @Scope("prototype")
 @Slf4j
 public class SendMessageCommand extends Command {
-    private SendMessage sendMessage;
+    private final SendMessage sendMessage;
     private final List<Object> sendObjects;
 
     private final TelegramUserService telegramUserService;
@@ -35,6 +35,7 @@ public class SendMessageCommand extends Command {
         this.telegramUserService = telegramUserService;
         this.chatIdService = chatIdService;
         sendObjects = new ArrayList<>();
+        sendMessage = new SendMessage();
     }
 
     @SecurityCheck
@@ -44,7 +45,7 @@ public class SendMessageCommand extends Command {
         String userMessage = update.getMessage().getText();
 
         if (securityState == SecurityState.SHOULD_RELOGIN) {
-            sendMessage = new SendMessage(chatId, "Sorry, you should sign in again");
+            sendMessage.setText("Sorry, you should sign in again");
             sendMessage.setReplyMarkup(defaultKeyboard(false));
 
             tgUser.setCommandSate(CommandState.BASIC);
@@ -55,7 +56,7 @@ public class SendMessageCommand extends Command {
         }
 
         if (tgUser.getCommandSate() == CommandState.BASIC) {
-            sendMessage = new SendMessage(chatId, "Send a message to all users");
+            sendMessage.setText("Send a message to all users");
             sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
 
             tgUser.setCommandSate(CommandState.SEND_MESSAGE_WAIT_FOR_MESSAGE);

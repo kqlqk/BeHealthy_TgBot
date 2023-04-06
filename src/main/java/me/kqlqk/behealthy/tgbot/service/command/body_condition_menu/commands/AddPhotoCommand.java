@@ -36,7 +36,7 @@ import java.util.*;
 @Scope("prototype")
 @Slf4j
 public class AddPhotoCommand extends Command {
-    private SendMessage sendMessage;
+    private final SendMessage sendMessage;
 
     private final TelegramUserService telegramUserService;
     private final GatewayClient gatewayClient;
@@ -47,15 +47,16 @@ public class AddPhotoCommand extends Command {
         this.telegramUserService = telegramUserService;
         this.gatewayClient = gatewayClient;
         this.botCfg = botCfg;
+        sendMessage = new SendMessage();
     }
 
     @SecurityCheck
     @Override
     public void handle(Update update, TelegramUser tgUser, AccessTokenDTO accessTokenDTO, SecurityState securityState) {
-        String chatId = update.getMessage().getChatId().toString();
+        sendMessage.setChatId(update.getMessage().getChatId().toString());
 
         if (securityState == SecurityState.SHOULD_RELOGIN) {
-            sendMessage = new SendMessage(chatId, "Sorry, you should sign in again");
+            sendMessage.setText("Sorry, you should sign in again");
             sendMessage.setReplyMarkup(defaultKeyboard(false));
 
             tgUser.setCommandSate(CommandState.BASIC);
@@ -72,7 +73,7 @@ public class AddPhotoCommand extends Command {
                 fullUserPhotoDTOs = gatewayClient.getAllUserPhotosAndFiles(tgUser.getUserId(), accessTokenDTO.getAccessToken());
             }
             catch (RuntimeException e) {
-                sendMessage = new SendMessage(chatId, "Something went wrong");
+                sendMessage.setText("Something went wrong");
                 return;
             }
 
@@ -80,12 +81,11 @@ public class AddPhotoCommand extends Command {
             Date lastPhotoDate = fullUserPhotoDTOs.get(fullUserPhotoDTOs.size() - 1).getPhotoDate();
             LocalDateTime localDateTime = LocalDateTime.ofInstant(lastPhotoDate.toInstant(), ZoneId.systemDefault());
             if (!LocalDateTime.now().isAfter(localDateTime.plusMonths(1))) {
-                sendMessage = new SendMessage(chatId,
-                                              "Sorry, for more contrast of changes you can add new image one month after the previous");
+                sendMessage.setText("Sorry, for more contrast of changes you can add new image one month after the previous");
                 return;
             }
 
-            sendMessage = new SendMessage(chatId, "Send photo of your current condition");
+            sendMessage.setText("Send photo of your current condition");
             sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
 
             tgUser.setCommandSate(CommandState.WAIT_FOR_PHOTO);
@@ -93,7 +93,7 @@ public class AddPhotoCommand extends Command {
         }
         else if (tgUser.getCommandSate() == CommandState.WAIT_FOR_PHOTO) {
             if (!update.getMessage().hasPhoto()) {
-                sendMessage = new SendMessage(chatId, "Please send the photo");
+                sendMessage.setText("Please send the photo");
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }
@@ -119,7 +119,7 @@ public class AddPhotoCommand extends Command {
                 inputStream.close();
             }
             catch (TelegramApiException | IOException e) {
-                sendMessage = new SendMessage(chatId, "Something went wrong");
+                sendMessage.setText("Something went wrong");
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
 
                 log.error("Something went wrong", e);
@@ -134,7 +134,7 @@ public class AddPhotoCommand extends Command {
                 gatewayClient.saveUserPhoto(tgUser.getUserId(), addUserPhotoDTO, accessTokenDTO.getAccessToken());
             }
             catch (RuntimeException e) {
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }
@@ -142,7 +142,7 @@ public class AddPhotoCommand extends Command {
             tgUser.setCommandSate(CommandState.BASIC);
             telegramUserService.update(tgUser);
 
-            sendMessage = new SendMessage(chatId, "Successfully added");
+            sendMessage.setText("Successfully added");
             sendMessage.setReplyMarkup(BodyConditionMenu.initKeyboard());
         }
     }

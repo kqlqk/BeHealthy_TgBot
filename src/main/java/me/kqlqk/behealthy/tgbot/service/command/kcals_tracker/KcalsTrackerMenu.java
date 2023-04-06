@@ -32,15 +32,16 @@ public class KcalsTrackerMenu extends Command {
     public KcalsTrackerMenu(TelegramUserService telegramUserService, GetFoodCommand getFoodCommand) {
         this.telegramUserService = telegramUserService;
         this.getFoodCommand = getFoodCommand;
+        sendMessage = new SendMessage();
     }
 
     @SecurityCheck
     @Override
     public void handle(Update update, TelegramUser tgUser, AccessTokenDTO accessTokenDTO, SecurityState securityState) {
-        String chatId = update.getMessage().getChatId().toString();
+        sendMessage.setChatId(update.getMessage().getChatId().toString());
 
         if (securityState == SecurityState.SHOULD_RELOGIN) {
-            sendMessage = new SendMessage(chatId, "Sorry, you should sign in again");
+            sendMessage.setText("Sorry, you should sign in again");
             sendMessage.setReplyMarkup(defaultKeyboard(false));
 
             tgUser.setCommandSate(CommandState.BASIC);

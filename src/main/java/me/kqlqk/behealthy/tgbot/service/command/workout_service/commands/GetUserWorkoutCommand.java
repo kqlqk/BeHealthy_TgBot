@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 @Scope("prototype")
 @Slf4j
 public class GetUserWorkoutCommand extends Command {
-    private SendMessage sendMessage;
+    private final SendMessage sendMessage;
 
     private final TelegramUserService telegramUserService;
     private final GatewayClient gatewayClient;
@@ -37,15 +37,16 @@ public class GetUserWorkoutCommand extends Command {
     public GetUserWorkoutCommand(TelegramUserService telegramUserService, GatewayClient gatewayClient) {
         this.telegramUserService = telegramUserService;
         this.gatewayClient = gatewayClient;
+        sendMessage = new SendMessage();
     }
 
     @SecurityCheck
     @Override
     public void handle(Update update, TelegramUser tgUser, AccessTokenDTO accessTokenDTO, SecurityState securityState) {
-        String chatId = update.getMessage().getChatId().toString();
+        sendMessage.setChatId(update.getMessage().getChatId().toString());
 
         if (securityState == SecurityState.SHOULD_RELOGIN) {
-            sendMessage = new SendMessage(chatId, "Sorry, you should sign in again");
+            sendMessage.setText("Sorry, you should sign in again");
             sendMessage.setReplyMarkup(defaultKeyboard(false));
 
             tgUser.setCommandSate(CommandState.BASIC);
@@ -67,18 +68,18 @@ public class GetUserWorkoutCommand extends Command {
             if (!e.getMessage().equals("Your own workout not found")) {
                 log.error("Something went wrong", e);
 
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 return;
             }
 
-            sendMessage = new SendMessage(chatId, "Looks like you don't have any exercises in your workout plan.\n" +
-                    "Add the first!");
+            sendMessage.setText("Looks like you don't have any exercises in your workout plan.\n" +
+                                        "Add the first!");
             sendMessage.setReplyMarkup(add1stExerciseKeyboard());
 
             return;
         }
 
-        sendMessage = new SendMessage(chatId, generateText(workout));
+        sendMessage.setText(generateText(workout));
         sendMessage.enableHtml(true);
         sendMessage.setReplyMarkup(initKeyboard());
     }
@@ -135,12 +136,20 @@ public class GetUserWorkoutCommand extends Command {
 
             GetUserWorkoutDTO current = workout.get(i);
             if (i > 0 && current.getDay() != workout.get(i - 1).getDay()) {
-                text.append("Day " + current.getDay() + ":\n");
+                text.append("Day ");
+                text.append(current.getDay());
+                text.append(":\n");
             }
 
-            text.append("<pre>" + current.getNumberPerDay() + ". " +
-                                StringUtils.capitalize(current.getExerciseName().toLowerCase()) +
-                                "\n[" + current.getRep() + " reps X " + current.getSet() + " sets]" + "</pre>\n\n");
+            text.append("<pre>");
+            text.append(current.getNumberPerDay());
+            text.append(". ");
+            text.append(StringUtils.capitalize(current.getExerciseName().toLowerCase()));
+            text.append("\n[");
+            text.append(current.getRep());
+            text.append(" reps X ");
+            text.append(current.getSet());
+            text.append(" sets] </pre>\n\n");
         }
 
         return text.toString();

@@ -29,7 +29,7 @@ public class LogsCommand extends Command {
     @Value("${logs.dir}")
     private String BASE_DIRECTORY;
 
-    private SendMessage sendMessage;
+    private final SendMessage sendMessage;
     private final List<Object> sendObjects;
     private final TelegramUserService telegramUserService;
 
@@ -37,6 +37,7 @@ public class LogsCommand extends Command {
     public LogsCommand(TelegramUserService telegramUserService) {
         this.telegramUserService = telegramUserService;
         sendObjects = new ArrayList<>();
+        sendMessage = new SendMessage();
     }
 
     @SecurityCheck
@@ -45,8 +46,10 @@ public class LogsCommand extends Command {
         String chatId = update.getMessage().getChatId().toString();
         String userMessage = update.getMessage().getText();
 
+        sendMessage.setChatId(chatId);
+
         if (securityState == SecurityState.SHOULD_RELOGIN) {
-            sendMessage = new SendMessage(chatId, "Sorry, you should sign in again");
+            sendMessage.setText("Sorry, you should sign in again");
             sendMessage.setReplyMarkup(defaultKeyboard(false));
 
             tgUser.setCommandSate(CommandState.BASIC);
@@ -57,7 +60,7 @@ public class LogsCommand extends Command {
         }
 
         if (tgUser.getCommandSate() == CommandState.BASIC) {
-            sendMessage = new SendMessage(chatId, "Choose service");
+            sendMessage.setText("Choose service");
             sendMessage.setReplyMarkup(initKeyboard());
 
             tgUser.setCommandSate(CommandState.LOGS_WAIT_FOR_CHOOSING);
@@ -83,7 +86,7 @@ public class LogsCommand extends Command {
                 path = BASE_DIRECTORY + "/tgBot-logs.log";
             }
             else {
-                sendMessage = new SendMessage(chatId, "Nothing found");
+                sendMessage.setText("Nothing found");
                 sendMessage.setReplyMarkup(initKeyboard());
                 return;
             }
@@ -95,7 +98,7 @@ public class LogsCommand extends Command {
                 }
             }
             catch (IOException e) {
-                this.sendMessage = new SendMessage(chatId, e.getMessage());
+                this.sendMessage.setText(e.getMessage());
                 sendMessage.setReplyMarkup(initKeyboard());
                 return;
             }

@@ -345,6 +345,11 @@ public class UpdateServiceImpl implements UpdateService {
         if (command.getSendObjects() != null && command.getSendObjects().length != 0) {
             return command.getSendObjects();
         }
+
+        if (command.getSendMessage() != null && command.getSendMessage().getText() != null) {
+            return command.getSendMessage();
+        }
+
         return command.getSendMessage();
     }
 
@@ -359,6 +364,11 @@ public class UpdateServiceImpl implements UpdateService {
         if (command.getSendObjects() != null && command.getSendObjects().length != 0) {
             return command.getSendObjects();
         }
-        return command.getSendMessage();
+
+        if (command.getSendMessage() != null && command.getSendMessage().getText() != null) {
+            return command.getSendMessage();
+        }
+
+        return null;
     }
 }

@@ -26,7 +26,7 @@ import java.util.List;
 @Scope("prototype")
 @Slf4j
 public class GetBodyConditionCommand extends Command {
-    private SendMessage sendMessage;
+    private final SendMessage sendMessage;
 
     private final TelegramUserService telegramUserService;
     private final GatewayClient gatewayClient;
@@ -35,15 +35,16 @@ public class GetBodyConditionCommand extends Command {
     public GetBodyConditionCommand(TelegramUserService telegramUserService, GatewayClient gatewayClient) {
         this.telegramUserService = telegramUserService;
         this.gatewayClient = gatewayClient;
+        sendMessage = new SendMessage();
     }
 
     @SecurityCheck
     @Override
     public void handle(Update update, TelegramUser tgUser, AccessTokenDTO accessTokenDTO, SecurityState securityState) {
-        String chatId = update.getMessage().getChatId().toString();
+        sendMessage.setChatId(update.getMessage().getChatId().toString());
 
         if (securityState == SecurityState.SHOULD_RELOGIN) {
-            sendMessage = new SendMessage(chatId, "Sorry, you should sign in again");
+            sendMessage.setText("Sorry, you should sign in again");
             sendMessage.setReplyMarkup(defaultKeyboard(false));
 
             tgUser.setCommandSate(CommandState.BASIC);
@@ -64,17 +65,17 @@ public class GetBodyConditionCommand extends Command {
             if (!e.getMessage().equals("Condition not found. Check, if you have your body's condition")) {
                 log.error("Something went wrong", e);
 
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 return;
             }
 
-            sendMessage = new SendMessage(chatId, "Please, set your body condition");
+            sendMessage.setText("Please, set your body condition");
             sendMessage.setReplyMarkup(setConditionKeyboard());
 
             return;
         }
 
-        sendMessage = new SendMessage(chatId, generateText(getUserConditionDTO));
+        sendMessage.setText(generateText(getUserConditionDTO));
         sendMessage.enableHtml(true);
         sendMessage.setReplyMarkup(initKeyboard());
     }
@@ -115,22 +116,39 @@ public class GetBodyConditionCommand extends Command {
 
     private String generateText(GetUserConditionDTO getUserConditionDTO) {
         StringBuilder text = new StringBuilder("<b>Your body:</b>\n");
-        text.append("<pre>Gender: " + StringUtils.capitalize(getUserConditionDTO.getGender().toLowerCase()) + "\n");
-        text.append("Age: " + getUserConditionDTO.getAge() + " y.o.\n");
-        text.append("Weight: " + getUserConditionDTO.getWeight() + " kg.\n");
-        text.append("Fat: " + getUserConditionDTO.getFatPercent() + " %\n");
-        text.append("Goal: " + setStringGoal(getUserConditionDTO.getGoal()) + "\n");
-        text.append("Activity: " + setStringActivity(getUserConditionDTO.getActivity()) + "</pre>\n\n");
-        text.append("<b>Recommended kilocalories:</b>\n");
+        text.append("<pre>Gender: ");
+        text.append(StringUtils.capitalize(getUserConditionDTO.getGender().toLowerCase()));
+        text.append("\nAge: ");
+        text.append(getUserConditionDTO.getAge());
+        text.append(" y.o.");
+        text.append("\nWeight: ");
+        text.append(getUserConditionDTO.getWeight());
+        text.append(" kg.");
+        text.append("\nFat: ");
+        text.append(getUserConditionDTO.getFatPercent());
+        text.append(" %");
+        text.append("\nGoal: ");
+        text.append(setStringGoal(getUserConditionDTO.getGoal()));
+        text.append("\nActivity: ");
+        text.append(setStringActivity(getUserConditionDTO.getActivity()));
+        text.append("</pre>");
+        text.append("\n\n<b>Recommended kilocalories:</b>\n");
 
         int protein = getUserConditionDTO.getDailyKcalDTO().getProtein();
         int fat = getUserConditionDTO.getDailyKcalDTO().getFat();
         int carb = getUserConditionDTO.getDailyKcalDTO().getCarb();
 
-        text.append("<pre>Kilocalories: " + (protein * 4 + fat * 9 + carb * 4) + "\n");
-        text.append("Protein: " + protein + " g.\n");
-        text.append("Fat: " + fat + " g.\n");
-        text.append("Carb: " + carb + " g.</pre>\n");
+        text.append("<pre>Kilocalories: ");
+        text.append((protein * 4 + fat * 9 + carb * 4));
+        text.append("\nProtein: ");
+        text.append(protein);
+        text.append(" g.");
+        text.append("\nFat: ");
+        text.append(fat);
+        text.append(" g.");
+        text.append("\nCarb: ");
+        text.append(carb);
+        text.append(" g.</pre>\n");
 
         return text.toString();
     }

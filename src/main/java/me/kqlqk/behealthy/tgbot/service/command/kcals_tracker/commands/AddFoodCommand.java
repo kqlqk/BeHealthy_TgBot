@@ -30,7 +30,7 @@ import java.util.List;
 @Scope("prototype")
 public class AddFoodCommand extends Command {
     private final List<Object> sendObjects;
-    private SendMessage sendMessage;
+    private final SendMessage sendMessage;
 
     private final TelegramUserService telegramUserService;
     private final GatewayClient gatewayClient;
@@ -42,6 +42,7 @@ public class AddFoodCommand extends Command {
         this.gatewayClient = gatewayClient;
         this.getFoodCommand = getFoodCommand;
         sendObjects = new ArrayList<>();
+        sendMessage = new SendMessage();
     }
 
     @SecurityCheck
@@ -49,6 +50,7 @@ public class AddFoodCommand extends Command {
     public void handle(Update update, TelegramUser tgUser, AccessTokenDTO accessTokenDTO, SecurityState securityState) {
         String chatId;
         String userMessage = null;
+
         if (update.hasCallbackQuery()) {
             chatId = update.getCallbackQuery().getMessage().getChatId().toString();
         }
@@ -57,8 +59,10 @@ public class AddFoodCommand extends Command {
             userMessage = update.getMessage().getText();
         }
 
+        sendMessage.setChatId(chatId);
+
         if (securityState == SecurityState.SHOULD_RELOGIN) {
-            sendMessage = new SendMessage(chatId, "Sorry, you should sign in again");
+            sendMessage.setText("Sorry, you should sign in again");
             sendMessage.setReplyMarkup(defaultKeyboard(false));
 
             tgUser.setCommandSate(CommandState.BASIC);
@@ -88,7 +92,7 @@ public class AddFoodCommand extends Command {
                 getDailyAteFoodDTOs = gatewayClient.getAllDailyAteFoods(tgUser.getUserId(), accessTokenDTO.getAccessToken());
             }
             catch (RuntimeException e) {
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }
@@ -129,7 +133,7 @@ public class AddFoodCommand extends Command {
                 food = splitFood(userMessage);
             }
             catch (BadUserDataException e) {
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }
@@ -145,7 +149,7 @@ public class AddFoodCommand extends Command {
                 gatewayClient.saveDailyAteFood(tgUser.getUserId(), addDailyAteFoodDTO, accessTokenDTO.getAccessToken());
             }
             catch (RuntimeException e) {
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }
@@ -174,7 +178,7 @@ public class AddFoodCommand extends Command {
                 getDailyAteFoodDTO = gatewayClient.getDailyAteFoods(tgUser.getUserId(), name, accessTokenDTO.getAccessToken());
             }
             catch (RuntimeException e) {
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }
@@ -188,9 +192,8 @@ public class AddFoodCommand extends Command {
                 weight = splitWeight(userMessage);
             }
             catch (BadUserDataException e) {
-                SendMessage sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
-                sendObjects.add(sendMessage);
                 return;
             }
 
@@ -200,7 +203,7 @@ public class AddFoodCommand extends Command {
                 gatewayClient.updateDailyAteFood(tgUser.getUserId(), addDailyAteFoodDTO, accessTokenDTO.getAccessToken());
             }
             catch (RuntimeException e) {
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }
@@ -236,7 +239,7 @@ public class AddFoodCommand extends Command {
                 getDailyAteFoodDTOs = gatewayClient.getAllDailyAteFoods(tgUser.getUserId(), accessTokenDTO.getAccessToken());
             }
             catch (RuntimeException e) {
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }
@@ -294,7 +297,7 @@ public class AddFoodCommand extends Command {
             sendObjects.add(editMessageText);
         }
         else {
-            sendMessage = new SendMessage(chatId, "Enter weight of the product");
+            sendMessage.setText("Enter weight of the product");
             sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
 
             Maps.putUserIdAddFoodCallback(tgUser.getUserId(), update.getCallbackQuery().getData());

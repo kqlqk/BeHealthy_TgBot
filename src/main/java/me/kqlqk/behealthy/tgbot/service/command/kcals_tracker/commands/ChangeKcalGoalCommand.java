@@ -30,7 +30,7 @@ import java.util.List;
 @Scope("prototype")
 @Slf4j
 public class ChangeKcalGoalCommand extends Command {
-    private SendMessage sendMessage;
+    private final SendMessage sendMessage;
 
     private final TelegramUserService telegramUserService;
     private final GatewayClient gatewayClient;
@@ -39,16 +39,17 @@ public class ChangeKcalGoalCommand extends Command {
     public ChangeKcalGoalCommand(TelegramUserService telegramUserService, GatewayClient gatewayClient) {
         this.telegramUserService = telegramUserService;
         this.gatewayClient = gatewayClient;
+        sendMessage = new SendMessage();
     }
 
     @SecurityCheck
     @Override
     public void handle(Update update, TelegramUser tgUser, AccessTokenDTO accessTokenDTO, SecurityState securityState) {
-        String chatId = update.getMessage().getChatId().toString();
+        sendMessage.setChatId(update.getMessage().getChatId().toString());
         String userMessage = update.getMessage().getText();
 
         if (securityState == SecurityState.SHOULD_RELOGIN) {
-            sendMessage = new SendMessage(chatId, "Sorry, you should sign in again");
+            sendMessage.setText("Sorry, you should sign in again");
             sendMessage.setReplyMarkup(defaultKeyboard(false));
 
             tgUser.setCommandSate(CommandState.BASIC);
@@ -59,7 +60,7 @@ public class ChangeKcalGoalCommand extends Command {
         }
 
         if (tgUser.getCommandSate() == CommandState.BASIC) {
-            sendMessage = new SendMessage(chatId, "Would you like to get your kilocalories goal from our system or set it yourself?");
+            sendMessage.setText("Would you like to get your kilocalories goal from our system or set it yourself?");
             sendMessage.setReplyMarkup(initKeyboard());
 
             tgUser.setCommandSate(CommandState.CHANGE_KCAL_GOAL_WAIT_FOR_CHOOSING);
@@ -76,7 +77,7 @@ public class ChangeKcalGoalCommand extends Command {
                     if (!e.getMessage().equals("You didn't set kilocalories goal")) {
                         log.error("Something went wrong", e);
 
-                        sendMessage = new SendMessage(chatId, e.getMessage());
+                        sendMessage.setText(e.getMessage());
                         return;
                     }
                 }
@@ -94,7 +95,7 @@ public class ChangeKcalGoalCommand extends Command {
                         gatewayClient.updateUserKcal(tgUser.getUserId(), updateUserKcalDTO, accessTokenDTO.getAccessToken());
                     }
                     catch (RuntimeException e) {
-                        sendMessage = new SendMessage(chatId, e.getMessage());
+                        sendMessage.setText(e.getMessage());
                         sendMessage.setReplyMarkup(KcalsTrackerMenu.initKeyboard());
 
                         tgUser.setCommandSate(CommandState.BASIC);
@@ -102,8 +103,8 @@ public class ChangeKcalGoalCommand extends Command {
                         return;
                     }
 
-                    sendMessage = new SendMessage(chatId, "Done. \n" +
-                            "If you want to update it, you should update your body condition");
+                    sendMessage.setText("Done. \n" +
+                                                "If you want to update it, you should update your body condition");
                     sendMessage.setReplyMarkup(KcalsTrackerMenu.initKeyboard());
                     tgUser.setCommandSate(CommandState.BASIC);
                     telegramUserService.update(tgUser);
@@ -118,18 +119,18 @@ public class ChangeKcalGoalCommand extends Command {
                     if (!e.getMessage().equals("Condition not found. Check, if you have your body's condition")) {
                         log.error("Something went wrong", e);
 
-                        sendMessage = new SendMessage(chatId, e.getMessage());
+                        sendMessage.setText(e.getMessage());
                         return;
                     }
                 }
 
                 if (getUserConditionDTO == null) {
-                    sendMessage = new SendMessage(chatId, "Please fill in your body condition " +
-                            "so that we can generate kilocalories goal for you");
+                    sendMessage.setText("Please fill in your body condition " +
+                                                "so that we can generate kilocalories goal for you");
                 }
                 else {
-                    sendMessage = new SendMessage(chatId, "Done. \n" +
-                            "If you want to update it, you should update your body condition");
+                    sendMessage.setText("Done. \n" +
+                                                "If you want to update it, you should update your body condition");
                 }
 
                 sendMessage.setReplyMarkup(KcalsTrackerMenu.initKeyboard());
@@ -139,7 +140,7 @@ public class ChangeKcalGoalCommand extends Command {
             else if (userMessage.equalsIgnoreCase("I will set myself")) {
                 String text = "Let's set your kilocalories goal.\n" +
                         "Do you want to set only kilocalories or proteins fats carbs too?";
-                sendMessage = new SendMessage(chatId, text);
+                sendMessage.setText(text);
                 sendMessage.setReplyMarkup(kcalKeyboard());
 
                 tgUser.setCommandSate(CommandState.CHANGE_KCAL_GOAL_WAIT_FOR_CHOOSING_KCAL);
@@ -149,11 +150,11 @@ public class ChangeKcalGoalCommand extends Command {
         else if (tgUser.getCommandSate() == CommandState.CHANGE_KCAL_GOAL_WAIT_FOR_CHOOSING_KCAL) {
             if (userMessage.equalsIgnoreCase("Only kilocalories")) {
                 Maps.putUserIdOnlyKcal(tgUser.getUserId(), true);
-                sendMessage = new SendMessage(chatId, "Use the following pattern: kilocalories");
+                sendMessage.setText("Use the following pattern: kilocalories");
             }
             else if (userMessage.equalsIgnoreCase("Proteins, fats, carbs too")) {
                 Maps.putUserIdOnlyKcal(tgUser.getUserId(), false);
-                sendMessage = new SendMessage(chatId, "Use the following pattern: proteins fats carbs");
+                sendMessage.setText("Use the following pattern: proteins fats carbs");
             }
 
             sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
@@ -171,7 +172,7 @@ public class ChangeKcalGoalCommand extends Command {
                 dailyKcal = splitDailyKcal(userMessage, addUserKcalDTO.isOnlyKcal());
             }
             catch (BadUserDataException e) {
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }
@@ -198,7 +199,7 @@ public class ChangeKcalGoalCommand extends Command {
                 if (!e.getMessage().equals("You didn't set kilocalories goal")) {
                     log.error("Something went wrong", e);
 
-                    sendMessage = new SendMessage(chatId, e.getMessage());
+                    sendMessage.setText(e.getMessage());
                     sendMessage.setReplyMarkup(KcalsTrackerMenu.initKeyboard());
                     tgUser.setCommandSate(CommandState.BASIC);
                     telegramUserService.update(tgUser);
@@ -211,7 +212,7 @@ public class ChangeKcalGoalCommand extends Command {
                     gatewayClient.addUserKcal(tgUser.getUserId(), addUserKcalDTO, accessTokenDTO.getAccessToken());
                 }
                 catch (RuntimeException e) {
-                    sendMessage = new SendMessage(chatId, e.getMessage());
+                    sendMessage.setText(e.getMessage());
                     sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                     return;
                 }
@@ -221,7 +222,7 @@ public class ChangeKcalGoalCommand extends Command {
                     gatewayClient.updateUserKcal(tgUser.getUserId(), addUserKcalDTO, accessTokenDTO.getAccessToken());
                 }
                 catch (RuntimeException e) {
-                    sendMessage = new SendMessage(chatId, e.getMessage());
+                    sendMessage.setText(e.getMessage());
                     sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                     return;
                 }
@@ -229,7 +230,7 @@ public class ChangeKcalGoalCommand extends Command {
 
             Maps.removeUserIdOnlyKcal(tgUser.getUserId());
 
-            sendMessage = new SendMessage(chatId, "Successfully added");
+            sendMessage.setText("Successfully added");
             sendMessage.setReplyMarkup(KcalsTrackerMenu.initKeyboard());
 
             tgUser.setCommandSate(CommandState.BASIC);

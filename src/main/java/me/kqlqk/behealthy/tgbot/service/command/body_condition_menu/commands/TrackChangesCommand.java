@@ -37,7 +37,7 @@ public class TrackChangesCommand extends Command {
     @Value("${files.tmp.dir}")
     private String dir;
 
-    private SendMessage sendMessage;
+    private final SendMessage sendMessage;
     private final List<Object> sendObjects;
 
     private final TelegramUserService telegramUserService;
@@ -48,6 +48,7 @@ public class TrackChangesCommand extends Command {
         this.telegramUserService = telegramUserService;
         this.gatewayClient = gatewayClient;
         sendObjects = new ArrayList<>();
+        sendMessage = new SendMessage();
     }
 
     @SecurityCheck
@@ -55,8 +56,10 @@ public class TrackChangesCommand extends Command {
     public void handle(Update update, TelegramUser tgUser, AccessTokenDTO accessTokenDTO, SecurityState securityState) {
         String chatId = update.getMessage().getChatId().toString();
 
+        sendMessage.setChatId(chatId);
+
         if (securityState == SecurityState.SHOULD_RELOGIN) {
-            sendMessage = new SendMessage(chatId, "Sorry, you should sign in again");
+            sendMessage.setText("Sorry, you should sign in again");
             sendMessage.setReplyMarkup(defaultKeyboard(false));
 
             tgUser.setCommandSate(CommandState.BASIC);
@@ -75,12 +78,12 @@ public class TrackChangesCommand extends Command {
         }
         catch (RuntimeException e) {
             if (!e.getMessage().equalsIgnoreCase("Photos not found")) {
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 log.error("Something went wrong", e);
                 return;
             }
 
-            sendMessage = new SendMessage(chatId, "Add your first photo");
+            sendMessage.setText("Add your first photo");
             sendMessage.setReplyMarkup(addFirstPhoto());
             return;
         }
@@ -101,7 +104,7 @@ public class TrackChangesCommand extends Command {
             file.createNewFile();
         }
         catch (IOException e) {
-            sendMessage = new SendMessage(chatId, "Something went wrong");
+            sendMessage.setText("Something went wrong");
             sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
 
             log.error("Something went wrong", e);

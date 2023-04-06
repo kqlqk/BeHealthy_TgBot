@@ -22,7 +22,7 @@ import java.util.List;
 @Scope("prototype")
 @Slf4j
 public class RemoveExerciseFromUserWorkoutCommand extends Command {
-    private SendMessage sendMessage;
+    private final SendMessage sendMessage;
     private final List<Object> sendObjects;
 
     private final TelegramUserService telegramUserService;
@@ -35,6 +35,7 @@ public class RemoveExerciseFromUserWorkoutCommand extends Command {
         this.gatewayClient = gatewayClient;
         this.getUserWorkoutCommand = getUserWorkoutCommand;
         sendObjects = new ArrayList<>();
+        sendMessage = new SendMessage();
     }
 
     @SecurityCheck
@@ -43,8 +44,10 @@ public class RemoveExerciseFromUserWorkoutCommand extends Command {
         String chatId = update.getMessage().getChatId().toString();
         String userMessage = update.getMessage().getText();
 
+        sendMessage.setChatId(chatId);
+
         if (securityState == SecurityState.SHOULD_RELOGIN) {
-            sendMessage = new SendMessage(chatId, "Sorry, you should sign in again");
+            sendMessage.setText("Sorry, you should sign in again");
             sendMessage.setReplyMarkup(defaultKeyboard(false));
 
             tgUser.setCommandSate(CommandState.BASIC);
@@ -57,7 +60,7 @@ public class RemoveExerciseFromUserWorkoutCommand extends Command {
         if (tgUser.getCommandSate() == CommandState.BASIC || tgUser.getCommandSate() == CommandState.RETURN_TO_WORKOUT_SERVICE_MENU) {
             String text = "Let's remove exercise from your plan\n" +
                     "Enter the name of exercise";
-            sendMessage = new SendMessage(chatId, text);
+            sendMessage.setText(text);
             sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
 
             tgUser.setCommandSate(CommandState.REMOVE_EXERCISE_WAIT_FOR_DATA);
@@ -68,7 +71,7 @@ public class RemoveExerciseFromUserWorkoutCommand extends Command {
                 gatewayClient.removeExercise(tgUser.getUserId(), userMessage, accessTokenDTO.getAccessToken());
             }
             catch (RuntimeException e) {
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }

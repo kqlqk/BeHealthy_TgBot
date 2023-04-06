@@ -21,22 +21,23 @@ import java.util.List;
 @Service
 @Scope("prototype")
 public class BodyConditionMenu extends Command {
-    private SendMessage sendMessage;
+    private final SendMessage sendMessage;
 
     private final TelegramUserService telegramUserService;
 
     @Autowired
     public BodyConditionMenu(TelegramUserService telegramUserService) {
         this.telegramUserService = telegramUserService;
+        sendMessage = new SendMessage();
     }
 
     @SecurityCheck
     @Override
     public void handle(Update update, TelegramUser tgUser, AccessTokenDTO accessTokenDTO, SecurityState securityState) {
-        String chatId = update.getMessage().getChatId().toString();
+        sendMessage.setChatId(update.getMessage().getChatId().toString());
 
         if (securityState == SecurityState.SHOULD_RELOGIN) {
-            sendMessage = new SendMessage(chatId, "Sorry, you should sign in again");
+            sendMessage.setText("Sorry, you should sign in again");
             sendMessage.setReplyMarkup(defaultKeyboard(false));
 
             tgUser.setCommandSate(CommandState.BASIC);
@@ -46,7 +47,7 @@ public class BodyConditionMenu extends Command {
             return;
         }
 
-        sendMessage = new SendMessage(chatId, "Choose one of the following menu item");
+        sendMessage.setText("Choose one of the following menu item");
         sendMessage.setReplyMarkup(initKeyboard());
     }
 

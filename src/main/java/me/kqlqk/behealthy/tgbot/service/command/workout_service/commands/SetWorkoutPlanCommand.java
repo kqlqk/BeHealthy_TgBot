@@ -26,7 +26,7 @@ import java.util.List;
 @Scope("prototype")
 @Slf4j
 public class SetWorkoutPlanCommand extends Command {
-    private SendMessage sendMessage;
+    private final SendMessage sendMessage;
     private final List<Object> sendObjects;
 
     private final TelegramUserService telegramUserService;
@@ -39,6 +39,7 @@ public class SetWorkoutPlanCommand extends Command {
         this.gatewayClient = gatewayClient;
         this.getWorkoutPlanCommand = getWorkoutPlanCommand;
         sendObjects = new ArrayList<>();
+        sendMessage = new SendMessage();
     }
 
     @SecurityCheck
@@ -48,7 +49,7 @@ public class SetWorkoutPlanCommand extends Command {
         String userMessage = update.getMessage().getText();
 
         if (securityState == SecurityState.SHOULD_RELOGIN) {
-            sendMessage = new SendMessage(chatId, "Sorry, you should sign in again");
+            sendMessage.setText("Sorry, you should sign in again");
             sendMessage.setReplyMarkup(defaultKeyboard(false));
 
             tgUser.setCommandSate(CommandState.BASIC);
@@ -60,7 +61,7 @@ public class SetWorkoutPlanCommand extends Command {
 
         if (tgUser.getCommandSate() == CommandState.BASIC || tgUser.getCommandSate() == CommandState.RETURN_TO_WORKOUT_SERVICE_MENU) {
             String text = "How many times a week do you want to workout?";
-            sendMessage = new SendMessage(chatId, text);
+            sendMessage.setText(text);
             sendMessage.setReplyMarkup(workoutKeyboard());
 
             tgUser.setCommandSate(CommandState.SET_WORKOUT_WAIT_FOR_DATA);
@@ -73,7 +74,7 @@ public class SetWorkoutPlanCommand extends Command {
                 times = splitData(userMessage);
             }
             catch (BadUserDataException e) {
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 sendMessage.setReplyMarkup(workoutKeyboard());
                 return;
             }
@@ -86,7 +87,7 @@ public class SetWorkoutPlanCommand extends Command {
             catch (RuntimeException e) {
                 log.error("Something went wrong", e);
 
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }

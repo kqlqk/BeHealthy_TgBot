@@ -13,11 +13,15 @@ import java.util.List;
 @Service
 @Scope("prototype")
 public class StartCommand extends Command {
-    private SendMessage sendMessage;
+    private final SendMessage sendMessage;
+
+    public StartCommand() {
+        sendMessage = new SendMessage();
+    }
 
     @Override
     public void handle(Update update, TelegramUser tgUser) {
-        String chatId = update.getMessage().getChatId().toString();
+        sendMessage.setChatId(update.getMessage().getChatId().toString());
         String text;
 
         if (tgUser.isActive()) {
@@ -27,7 +31,7 @@ public class StartCommand extends Command {
             text = "Hello, " + update.getMessage().getChat().getFirstName() + ". You should sign in or sign up to your account.";
         }
 
-        sendMessage = new SendMessage(chatId, text);
+        sendMessage.setText(text);
         sendMessage.setReplyMarkup(defaultKeyboard(tgUser.isActive()));
     }
 

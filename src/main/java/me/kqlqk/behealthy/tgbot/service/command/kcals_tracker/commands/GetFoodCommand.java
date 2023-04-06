@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Scope("prototype")
 @Slf4j
 public class GetFoodCommand extends Command {
-    private SendMessage sendMessage;
+    private final SendMessage sendMessage;
     private final List<Object> sendObjects;
 
     private final TelegramUserService telegramUserService;
@@ -42,7 +42,8 @@ public class GetFoodCommand extends Command {
     public GetFoodCommand(TelegramUserService telegramUserService, GatewayClient gatewayClient) {
         this.telegramUserService = telegramUserService;
         this.gatewayClient = gatewayClient;
-        this.sendObjects = new ArrayList<>();
+        sendObjects = new ArrayList<>();
+        sendMessage = new SendMessage();
     }
 
     @SecurityCheck
@@ -56,8 +57,10 @@ public class GetFoodCommand extends Command {
             chatId = update.getMessage().getChatId().toString();
         }
 
+        sendMessage.setChatId(chatId);
+
         if (securityState == SecurityState.SHOULD_RELOGIN) {
-            sendMessage = new SendMessage(chatId, "Sorry, you should sign in again");
+            sendMessage.setText("Sorry, you should sign in again");
             sendMessage.setReplyMarkup(defaultKeyboard(false));
 
             tgUser.setCommandSate(CommandState.BASIC);
@@ -82,7 +85,7 @@ public class GetFoodCommand extends Command {
             if (!e.getMessage().equals("You didn't set kilocalories goal")) {
                 log.warn("Something went wrong", e);
 
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 return;
             }
         }
@@ -95,7 +98,7 @@ public class GetFoodCommand extends Command {
                 if (!e.getMessage().equals("Condition not found. Check, if you have your body's condition")) {
                     log.warn("Something went wrong", e);
 
-                    sendMessage = new SendMessage(chatId, e.getMessage());
+                    sendMessage.setText(e.getMessage());
                     return;
                 }
 
@@ -114,7 +117,7 @@ public class GetFoodCommand extends Command {
                     catch (RuntimeException ex) {
                         log.warn("Something went wrong", e);
 
-                        sendMessage = new SendMessage(chatId, e.getMessage());
+                        sendMessage.setText(e.getMessage());
                         sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                         return;
                     }
@@ -129,7 +132,7 @@ public class GetFoodCommand extends Command {
                     generalKcals.setKcal(getUserKcalDTO.getKcal());
                 }
                 else {
-                    sendMessage = new SendMessage(chatId, "Please fill in your body condition or set a kilocalories goal");
+                    sendMessage.setText("Please fill in your body condition or set a kilocalories goal");
                     sendMessage.setReplyMarkup(kcalKeyboard());
                     return;
                 }
@@ -161,11 +164,11 @@ public class GetFoodCommand extends Command {
             getDailyAteFoodDTOs = gatewayClient.getAllDailyAteFoods(tgUser.getUserId(), accessTokenDTO.getAccessToken());
         }
         catch (RuntimeException e) {
-            sendMessage = new SendMessage(chatId, e.getMessage());
+            sendMessage.setText(e.getMessage());
             return;
         }
 
-        sendMessage = new SendMessage(chatId, generateText(getDailyAteFoodDTOs, generalKcals));
+        sendMessage.setText(generateText(getDailyAteFoodDTOs, generalKcals));
         sendMessage.enableHtml(true);
         sendMessage.setReplyMarkup(inlineKeyboard());
     }
@@ -213,7 +216,7 @@ public class GetFoodCommand extends Command {
             getDailyAteFoodDTOs = gatewayClient.getAllDailyAteFoods(tgUser.getUserId(), accessTokenDTO.getAccessToken());
         }
         catch (RuntimeException e) {
-            sendMessage = new SendMessage(chatId, e.getMessage());
+            sendMessage.setText(e.getMessage());
             return;
         }
 

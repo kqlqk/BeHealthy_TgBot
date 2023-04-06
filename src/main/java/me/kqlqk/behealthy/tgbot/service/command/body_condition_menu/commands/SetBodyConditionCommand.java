@@ -28,7 +28,7 @@ import java.util.List;
 @Scope("prototype")
 @Slf4j
 public class SetBodyConditionCommand extends Command {
-    private SendMessage sendMessage;
+    private final SendMessage sendMessage;
     private final List<Object> sendObjects;
 
     private final TelegramUserService telegramUserService;
@@ -41,6 +41,7 @@ public class SetBodyConditionCommand extends Command {
         this.gatewayClient = gatewayClient;
         this.bodyConditionMenu = bodyConditionMenu;
         sendObjects = new ArrayList<>();
+        sendMessage = new SendMessage();
     }
 
     @SecurityCheck
@@ -49,8 +50,10 @@ public class SetBodyConditionCommand extends Command {
         String chatId = update.getMessage().getChatId().toString();
         String userMessage = update.getMessage().getText();
 
+        sendMessage.setChatId(chatId);
+
         if (securityState == SecurityState.SHOULD_RELOGIN) {
-            sendMessage = new SendMessage(chatId, "Sorry, you should sign in again");
+            sendMessage.setText("Sorry, you should sign in again");
             sendMessage.setReplyMarkup(defaultKeyboard(false));
 
             tgUser.setCommandSate(CommandState.BASIC);
@@ -62,7 +65,7 @@ public class SetBodyConditionCommand extends Command {
 
         if (tgUser.getCommandSate() == CommandState.BASIC || tgUser.getCommandSate() == CommandState.RETURN_TO_BODY_CONDITION_MENU) {
             String text = "Do you know your percent of body fat?";
-            sendMessage = new SendMessage(chatId, text);
+            sendMessage.setText(text);
             sendMessage.setReplyMarkup(yesNoKeyboard());
 
             tgUser.setCommandSate(CommandState.SET_BODY_CONDITION_WAIT_FOR_FAT_PERCENT);
@@ -76,12 +79,12 @@ public class SetBodyConditionCommand extends Command {
                 Maps.putUserIdFatPercent(tgUser.getUserId(), false);
             }
             else {
-                sendMessage = new SendMessage(chatId, "Waiting for answer: yes / no");
+                sendMessage.setText("Waiting for answer: yes / no");
                 sendMessage.setReplyMarkup(yesNoKeyboard());
                 return;
             }
 
-            sendMessage = new SendMessage(chatId, "What's your gender?");
+            sendMessage.setText("What's your gender?");
             sendMessage.setReplyMarkup(genderKeyboard());
 
             tgUser.setCommandSate(CommandState.SET_BODY_CONDITION_WAIT_FOR_GENDER);
@@ -95,15 +98,15 @@ public class SetBodyConditionCommand extends Command {
                 Maps.putUserIdGender(tgUser.getUserId(), "FEMALE");
             }
             else {
-                sendMessage = new SendMessage(chatId, "Waiting for answer: male / female");
+                sendMessage.setText("Waiting for answer: male / female");
                 sendMessage.setReplyMarkup(genderKeyboard());
                 return;
             }
 
-            sendMessage = new SendMessage(chatId, "What's your daily activity:\n" +
-                    "* minimal (no gym / sitting work)\n" +
-                    "* average (2-3 times per week)\n" +
-                    "* maximal (4-6 times per week)");
+            sendMessage.setText("What's your daily activity:\n" +
+                                        "* minimal (no gym / sitting work)\n" +
+                                        "* average (2-3 times per week)\n" +
+                                        "* maximal (4-6 times per week)");
             sendMessage.setReplyMarkup(activityKeyboard());
 
             tgUser.setCommandSate(CommandState.SET_BODY_CONDITION_WAIT_FOR_ACTIVITY);
@@ -120,12 +123,12 @@ public class SetBodyConditionCommand extends Command {
                 Maps.putUserIdActivity(tgUser.getUserId(), "MAX");
             }
             else {
-                sendMessage = new SendMessage(chatId, "Waiting for answer: minimal / average / maximal");
+                sendMessage.setText("Waiting for answer: minimal / average / maximal");
                 sendMessage.setReplyMarkup(activityKeyboard());
                 return;
             }
 
-            sendMessage = new SendMessage(chatId, "What's your goal?");
+            sendMessage.setText("What's your goal?");
             sendMessage.setReplyMarkup(goalKeyboard());
 
             tgUser.setCommandSate(CommandState.SET_BODY_CONDITION_WAIT_FOR_GOAL);
@@ -142,27 +145,27 @@ public class SetBodyConditionCommand extends Command {
                 Maps.putUserIdGoal(tgUser.getUserId(), "GAIN");
             }
             else {
-                sendMessage = new SendMessage(chatId, "Waiting for answer: Lose weight / Maintain weight / Gain weight");
+                sendMessage.setText("Waiting for answer: Lose weight / Maintain weight / Gain weight");
                 sendMessage.setReplyMarkup(goalKeyboard());
                 return;
             }
 
             if (Maps.getUserIdFatPercent(tgUser.getUserId())) {
-                sendMessage = new SendMessage(chatId, "Use the following pattern: age height weight 'fat percent'");
+                sendMessage.setText("Use the following pattern: age height weight 'fat percent'");
             }
             else {
                 if (Maps.getUserIdGender(tgUser.getUserId()).equalsIgnoreCase("male")) {
-                    sendMessage = new SendMessage(chatId, "Use the following pattern: age height weight " +
-                            "'fat fold between chest and ilium' " +
-                            "'fat fold between navel and lower belly' " +
-                            "'fat fold between nipple and armpit' " +
-                            "'fat fold between nipple and upper chest");
+                    sendMessage.setText("Use the following pattern: age height weight " +
+                                                "'fat fold between chest and ilium' " +
+                                                "'fat fold between navel and lower belly' " +
+                                                "'fat fold between nipple and armpit' " +
+                                                "'fat fold between nipple and upper chest");
                 }
                 else {
-                    sendMessage = new SendMessage(chatId, "Use the following pattern: age height weight " +
-                            "'fat fold between shoulder and elbow' " +
-                            "'fat fold between chest and ilium' " +
-                            "'fat fold between navel and lower belly' ");
+                    sendMessage.setText("Use the following pattern: age height weight " +
+                                                "'fat fold between shoulder and elbow' " +
+                                                "'fat fold between chest and ilium' " +
+                                                "'fat fold between navel and lower belly' ");
                 }
             }
 
@@ -178,7 +181,7 @@ public class SetBodyConditionCommand extends Command {
                 data = split(userMessage, Maps.getUserIdFatPercent(tgUser.getUserId()), Maps.getUserIdGender(tgUser.getUserId()));
             }
             catch (BadUserDataException e) {
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }
@@ -218,7 +221,7 @@ public class SetBodyConditionCommand extends Command {
             }
             catch (RuntimeException e) {
                 if (!e.getMessage().equals("You already set a body condition")) {
-                    sendMessage = new SendMessage(chatId, e.getMessage());
+                    sendMessage.setText(e.getMessage());
                     sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                     return;
                 }
@@ -227,7 +230,7 @@ public class SetBodyConditionCommand extends Command {
                     gatewayClient.updateUserCondition(tgUser.getUserId(), addUpdateUserConditionDTO, accessTokenDTO.getAccessToken());
                 }
                 catch (RuntimeException ex) {
-                    sendMessage = new SendMessage(chatId, ex.getMessage());
+                    sendMessage.setText(ex.getMessage());
                     sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                     return;
                 }

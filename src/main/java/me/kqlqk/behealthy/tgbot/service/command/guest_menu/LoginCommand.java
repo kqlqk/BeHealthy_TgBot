@@ -20,7 +20,7 @@ import java.util.List;
 @Service
 @Scope("prototype")
 public class LoginCommand extends Command {
-    private SendMessage sendMessage;
+    private final SendMessage sendMessage;
     private final TelegramUserService telegramUserService;
     private final GatewayClient gatewayClient;
 
@@ -28,16 +28,17 @@ public class LoginCommand extends Command {
     public LoginCommand(TelegramUserService telegramUserService, GatewayClient gatewayClient) {
         this.telegramUserService = telegramUserService;
         this.gatewayClient = gatewayClient;
+        sendMessage = new SendMessage();
     }
 
     @Override
     public void handle(Update update, TelegramUser tgUser) {
+        sendMessage.setText(update.getMessage().getChatId().toString());
         String userMessage = update.getMessage().getText();
-        String chatId = update.getMessage().getChatId().toString();
 
         if (tgUser.getCommandSate() == CommandState.BASIC) {
             String text = "Enter your email and password.\n Use the following pattern: email password";
-            sendMessage = new SendMessage(chatId, text);
+            sendMessage.setText(text);
             sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
 
             tgUser.setCommandSate(CommandState.LOGIN_WAIT_FOR_DATA);
@@ -51,7 +52,7 @@ public class LoginCommand extends Command {
                 credentials = splitCredentials(userMessage);
             }
             catch (BadUserDataException e) {
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }
@@ -63,7 +64,7 @@ public class LoginCommand extends Command {
                 tokensDTO = gatewayClient.logInUser(loginDTO);
             }
             catch (RuntimeException e) {
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }
@@ -74,7 +75,7 @@ public class LoginCommand extends Command {
             tgUser.setActive(true);
             telegramUserService.update(tgUser);
 
-            sendMessage = new SendMessage(chatId, "Successfully signed in");
+            sendMessage.setText("Successfully signed in");
             sendMessage.setReplyMarkup(defaultKeyboard(true));
         }
     }

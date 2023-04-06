@@ -20,32 +20,32 @@ import java.util.List;
 @Service
 @Scope("prototype")
 public class RegistrationCommand extends Command {
+    private final SendMessage sendMessage;
+
     private final GatewayClient gatewayClient;
     private final TelegramUserService telegramUserService;
-
-    private SendMessage sendMessage;
 
     @Autowired
     public RegistrationCommand(GatewayClient gatewayClient, TelegramUserService telegramUserService) {
         this.gatewayClient = gatewayClient;
         this.telegramUserService = telegramUserService;
+        sendMessage = new SendMessage();
     }
 
     @Override
     public void handle(Update update, TelegramUser tgUser) {
+        sendMessage.setChatId(update.getMessage().getChatId().toString());
         String userMessage = update.getMessage().getText();
-        String chatId = update.getMessage().getChatId().toString();
 
         if (tgUser.isActive()) {
-            sendMessage = new SendMessage(chatId, "You already signed up");
+            sendMessage.setText("You already signed up");
             sendMessage.setReplyMarkup(defaultKeyboard(true));
             return;
         }
 
         if (tgUser.getCommandSate() == CommandState.BASIC) {
-            String text = "Enter your email, name and password." +
-                    "\nUse the following pattern: email name password";
-            sendMessage = new SendMessage(chatId, text);
+            sendMessage.setText("Enter your email, name and password." +
+                                        "\nUse the following pattern: email name password");
             sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
 
             tgUser.setCommandSate(CommandState.REGISTRATION_WAIT_FOR_DATA);
@@ -59,7 +59,7 @@ public class RegistrationCommand extends Command {
                 data = splitData(userMessage);
             }
             catch (BadUserDataException e) {
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }
@@ -71,7 +71,7 @@ public class RegistrationCommand extends Command {
                 tokensDTO = gatewayClient.createUser(registrationDTO);
             }
             catch (RuntimeException e) {
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }
@@ -82,7 +82,7 @@ public class RegistrationCommand extends Command {
             tgUser.setActive(true);
             telegramUserService.update(tgUser);
 
-            sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Successfully signed up");
+            sendMessage.setText("Successfully signed up");
             sendMessage.setReplyMarkup(defaultKeyboard(true));
         }
     }

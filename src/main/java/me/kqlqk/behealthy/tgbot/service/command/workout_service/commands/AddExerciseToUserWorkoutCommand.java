@@ -24,7 +24,7 @@ import java.util.List;
 @Scope("prototype")
 @Slf4j
 public class AddExerciseToUserWorkoutCommand extends Command {
-    private SendMessage sendMessage;
+    private final SendMessage sendMessage;
     private final List<Object> sendObjects;
 
     private final TelegramUserService telegramUserService;
@@ -37,6 +37,7 @@ public class AddExerciseToUserWorkoutCommand extends Command {
         this.gatewayClient = gatewayClient;
         this.getUserWorkoutCommand = getUserWorkoutCommand;
         sendObjects = new ArrayList<>();
+        sendMessage = new SendMessage();
     }
 
     @SecurityCheck
@@ -45,8 +46,10 @@ public class AddExerciseToUserWorkoutCommand extends Command {
         String chatId = update.getMessage().getChatId().toString();
         String userMessage = update.getMessage().getText();
 
+        sendMessage.setChatId(chatId);
+
         if (securityState == SecurityState.SHOULD_RELOGIN) {
-            sendMessage = new SendMessage(chatId, "Sorry, you should sign in again");
+            sendMessage.setText("Sorry, you should sign in again");
             sendMessage.setReplyMarkup(defaultKeyboard(false));
 
             tgUser.setCommandSate(CommandState.BASIC);
@@ -59,7 +62,7 @@ public class AddExerciseToUserWorkoutCommand extends Command {
         if (tgUser.getCommandSate() == CommandState.BASIC || tgUser.getCommandSate() == CommandState.RETURN_TO_WORKOUT_SERVICE_MENU) {
             String text = "Let's add your exercise to plan\n" +
                     "Use the following pattern: 'Day of the week (from 1 to 7) 'exercise order' 'exercise name' reps sets";
-            sendMessage = new SendMessage(chatId, text);
+            sendMessage.setText(text);
             sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
 
             tgUser.setCommandSate(CommandState.ADD_EXERCISE_WAIT_FOR_DATA);
@@ -72,7 +75,7 @@ public class AddExerciseToUserWorkoutCommand extends Command {
                 data = split(userMessage);
             }
             catch (BadUserDataException e) {
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }
@@ -88,7 +91,7 @@ public class AddExerciseToUserWorkoutCommand extends Command {
                 gatewayClient.addExerciseToUserWorkout(tgUser.getUserId(), addUserWorkoutDTO, accessTokenDTO.getAccessToken());
             }
             catch (RuntimeException e) {
-                sendMessage = new SendMessage(chatId, e.getMessage());
+                sendMessage.setText(e.getMessage());
                 sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
                 return;
             }

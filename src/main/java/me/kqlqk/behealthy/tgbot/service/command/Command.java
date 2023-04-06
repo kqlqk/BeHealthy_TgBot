@@ -18,7 +18,7 @@ public abstract class Command {
     public void handle(Update update, TelegramUser tgUser, AccessTokenDTO accessTokenDTO, SecurityState securityState) {
     }
 
-    public ReplyKeyboardMarkup defaultKeyboard(boolean userActive) {
+    public final ReplyKeyboardMarkup defaultKeyboard(boolean userActive) {
         ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
@@ -47,7 +47,7 @@ public abstract class Command {
         return keyboard;
     }
 
-    public ReplyKeyboardMarkup onlyBackCommandKeyboard() {
+    public final ReplyKeyboardMarkup onlyBackCommandKeyboard() {
         ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 

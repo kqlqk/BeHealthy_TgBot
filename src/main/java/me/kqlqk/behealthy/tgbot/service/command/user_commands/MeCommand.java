@@ -20,7 +20,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @Slf4j
 @Scope("prototype")
 public class MeCommand extends Command {
-    private SendMessage sendMessage;
+    private final SendMessage sendMessage;
     private final GatewayClient gatewayClient;
     private final TelegramUserService telegramUserService;
 
@@ -28,16 +28,17 @@ public class MeCommand extends Command {
     public MeCommand(GatewayClient gatewayClient, TelegramUserService telegramUserService) {
         this.gatewayClient = gatewayClient;
         this.telegramUserService = telegramUserService;
+        sendMessage = new SendMessage();
     }
 
     @SecurityCheck
     @Override
     public void handle(Update update, TelegramUser tgUser, AccessTokenDTO accessTokenDTO, SecurityState securityState) {
-        String chatId = update.getMessage().getChatId().toString();
+        sendMessage.setChatId(update.getMessage().getChatId().toString());
         GetUserDTO getUserDTO;
 
         if (securityState == SecurityState.SHOULD_RELOGIN) {
-            sendMessage = new SendMessage(chatId, "Sorry, you should sign in again");
+            sendMessage.setText("Sorry, you should sign in again");
             tgUser.setCommandSate(CommandState.BASIC);
             tgUser.setActive(false);
 
@@ -50,13 +51,11 @@ public class MeCommand extends Command {
         }
         catch (RuntimeException e) {
             log.error("Something went wrong", e);
-            sendMessage = new SendMessage(chatId, e.getMessage());
+            sendMessage.setText(e.getMessage());
             return;
         }
 
-        String text = "Name: " + getUserDTO.getName() + "\nEmail: " + getUserDTO.getEmail();
-
-        sendMessage = new SendMessage(chatId, text);
+        sendMessage.setText("Name: " + getUserDTO.getName() + "\nEmail: " + getUserDTO.getEmail());
         sendMessage.setReplyMarkup(onlyBackCommandKeyboard());
     }
 
