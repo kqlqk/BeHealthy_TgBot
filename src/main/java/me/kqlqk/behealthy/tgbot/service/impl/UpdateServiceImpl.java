@@ -118,7 +118,7 @@ public class UpdateServiceImpl implements UpdateService {
         }
 
         if (update.getMessage().hasPhoto() && tgUser.getCommandSate() == CommandState.WAIT_FOR_PHOTO) {
-            return handleAndReturnSendObject(update, tgUser, "addPhotoCommand", AddPhotoCommand.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "addPhotoCommand", AddPhotoCommand.class);
         }
 
         if (!update.getMessage().hasText()) {
@@ -152,11 +152,11 @@ public class UpdateServiceImpl implements UpdateService {
         }
 
         if (update.getCallbackQuery().getData().startsWith("AddFoodCommand_")) {
-            return handleAndReturnSendObject(update, tgUser, "addFoodCommand", AddFoodCommand.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "addFoodCommand", AddFoodCommand.class);
         }
 
         if (update.getCallbackQuery().getData().startsWith("GetFoodCommand_")) {
-            return handleAndReturnSendObject(update, tgUser, "getFoodCommand", GetFoodCommand.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "getFoodCommand", GetFoodCommand.class);
         }
 
         return null;
@@ -192,69 +192,69 @@ public class UpdateServiceImpl implements UpdateService {
         String userMessage = update.getMessage().getText().toLowerCase();
 
         if (KcalsTrackerMenu.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "kcalsTrackerMenu", KcalsTrackerMenu.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "kcalsTrackerMenu", KcalsTrackerMenu.class);
         }
 
         if (GetFoodCommand.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "getFoodCommand", GetFoodCommand.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "getFoodCommand", GetFoodCommand.class);
         }
 
         if (AddFoodCommand.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "addFoodCommand", AddFoodCommand.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "addFoodCommand", AddFoodCommand.class);
         }
 
         if (ChangeKcalGoalCommand.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "changeKcalGoalCommand", ChangeKcalGoalCommand.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "changeKcalGoalCommand", ChangeKcalGoalCommand.class);
         }
 
 
         if (BodyConditionMenu.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "bodyConditionMenu", BodyConditionMenu.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "bodyConditionMenu", BodyConditionMenu.class);
         }
 
         if (GetBodyConditionCommand.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "getBodyConditionCommand", GetBodyConditionCommand.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "getBodyConditionCommand", GetBodyConditionCommand.class);
         }
 
         if (SetBodyConditionCommand.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "setBodyConditionCommand", SetBodyConditionCommand.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "setBodyConditionCommand", SetBodyConditionCommand.class);
         }
 
         if (TrackChangesCommand.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "trackChangesCommand", TrackChangesCommand.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "trackChangesCommand", TrackChangesCommand.class);
         }
 
         if (AddPhotoCommand.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "addPhotoCommand", AddPhotoCommand.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "addPhotoCommand", AddPhotoCommand.class);
         }
 
         if (LoadOldPhotosCommand.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "loadOldPhotosCommand", LoadOldPhotosCommand.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "loadOldPhotosCommand", LoadOldPhotosCommand.class);
         }
 
 
         if (WorkoutServiceMenu.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "workoutServiceMenu", WorkoutServiceMenu.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "workoutServiceMenu", WorkoutServiceMenu.class);
         }
 
         if (GetWorkoutPlanCommand.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "getWorkoutPlanCommand", GetWorkoutPlanCommand.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "getWorkoutPlanCommand", GetWorkoutPlanCommand.class);
         }
 
         if (SetWorkoutPlanCommand.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "setWorkoutPlanCommand", SetWorkoutPlanCommand.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "setWorkoutPlanCommand", SetWorkoutPlanCommand.class);
         }
 
         if (GetUserWorkoutCommand.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "getUserWorkoutCommand", GetUserWorkoutCommand.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "getUserWorkoutCommand", GetUserWorkoutCommand.class);
         }
 
         if (AddExerciseToUserWorkoutCommand.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "addExerciseToUserWorkoutCommand", AddExerciseToUserWorkoutCommand.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "addExerciseToUserWorkoutCommand", AddExerciseToUserWorkoutCommand.class);
         }
 
         if (RemoveExerciseFromUserWorkoutCommand.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "removeExerciseFromUserWorkoutCommand", RemoveExerciseFromUserWorkoutCommand.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "removeExerciseFromUserWorkoutCommand", RemoveExerciseFromUserWorkoutCommand.class);
         }
 
 
@@ -266,7 +266,7 @@ public class UpdateServiceImpl implements UpdateService {
                 return handleAndReturnSendObject(update, tgUser, "loginCommand", LoginCommand.class);
 
             case "/me":
-                return handleAndReturnSendObject(update, tgUser, "meCommand", MeCommand.class, new AccessTokenDTO());
+                return handleAndReturnSendObjectSecured(update, tgUser, "meCommand", MeCommand.class);
 
             default:
                 return null;
@@ -280,31 +280,31 @@ public class UpdateServiceImpl implements UpdateService {
 
             case ADD_FOOD_WAIT_FOR_DATA:
             case ADD_FOOD_WAIT_FOR_DATA_CALLBACK:
-                return handleAndReturnSendObject(update, tgUser, "addFoodCommand", AddFoodCommand.class, new AccessTokenDTO());
+                return handleAndReturnSendObjectSecured(update, tgUser, "addFoodCommand", AddFoodCommand.class);
 
             case CHANGE_KCAL_GOAL_WAIT_FOR_CHOOSING:
             case CHANGE_KCAL_GOAL_WAIT_FOR_CHOOSING_KCAL:
             case CHANGE_KCAL_WAIT_FOR_DATA:
-                return handleAndReturnSendObject(update, tgUser, "changeKcalGoalCommand", ChangeKcalGoalCommand.class, new AccessTokenDTO());
+                return handleAndReturnSendObjectSecured(update, tgUser, "changeKcalGoalCommand", ChangeKcalGoalCommand.class);
 
             case SET_BODY_CONDITION_WAIT_FOR_FAT_PERCENT:
             case SET_BODY_CONDITION_WAIT_FOR_GENDER:
             case SET_BODY_CONDITION_WAIT_FOR_ACTIVITY:
             case SET_BODY_CONDITION_WAIT_FOR_GOAL:
             case SET_BODY_CONDITION_WAIT_FOR_DATA:
-                return handleAndReturnSendObject(update, tgUser, "setBodyConditionCommand", SetBodyConditionCommand.class, new AccessTokenDTO());
+                return handleAndReturnSendObjectSecured(update, tgUser, "setBodyConditionCommand", SetBodyConditionCommand.class);
 
             case SET_WORKOUT_WAIT_FOR_DATA:
-                return handleAndReturnSendObject(update, tgUser, "setWorkoutPlanCommand", SetWorkoutPlanCommand.class, new AccessTokenDTO());
+                return handleAndReturnSendObjectSecured(update, tgUser, "setWorkoutPlanCommand", SetWorkoutPlanCommand.class);
 
             case ADD_EXERCISE_WAIT_FOR_DATA:
-                return handleAndReturnSendObject(update, tgUser, "addExerciseToUserWorkoutCommand", AddExerciseToUserWorkoutCommand.class, new AccessTokenDTO());
+                return handleAndReturnSendObjectSecured(update, tgUser, "addExerciseToUserWorkoutCommand", AddExerciseToUserWorkoutCommand.class);
 
             case REMOVE_EXERCISE_WAIT_FOR_DATA:
-                return handleAndReturnSendObject(update, tgUser, "removeExerciseFromUserWorkoutCommand", RemoveExerciseFromUserWorkoutCommand.class, new AccessTokenDTO());
+                return handleAndReturnSendObjectSecured(update, tgUser, "removeExerciseFromUserWorkoutCommand", RemoveExerciseFromUserWorkoutCommand.class);
 
             case WAIT_FOR_PHOTO:
-                return handleAndReturnSendObject(update, tgUser, "addPhotoCommand", AddPhotoCommand.class, new AccessTokenDTO());
+                return handleAndReturnSendObjectSecured(update, tgUser, "addPhotoCommand", AddPhotoCommand.class);
         }
 
         return null;
@@ -315,20 +315,20 @@ public class UpdateServiceImpl implements UpdateService {
 
         switch (tgUser.getCommandSate()) {
             case LOGS_WAIT_FOR_CHOOSING:
-                return handleAndReturnSendObject(update, tgUser, "logsCommand", LogsCommand.class, new AccessTokenDTO());
+                return handleAndReturnSendObjectSecured(update, tgUser, "logsCommand", LogsCommand.class);
 
             case SEND_MESSAGE_WAIT_FOR_MESSAGE:
-                return handleAndReturnSendObject(update, tgUser, "sendMessageCommand", SendMessageCommand.class, new AccessTokenDTO());
+                return handleAndReturnSendObjectSecured(update, tgUser, "sendMessageCommand", SendMessageCommand.class);
         }
 
         if (AdminMenu.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "adminMenu", AdminMenu.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "adminMenu", AdminMenu.class);
         }
         if (LogsCommand.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "logsCommand", LogsCommand.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "logsCommand", LogsCommand.class);
         }
         if (SendMessageCommand.getNames().contains(userMessage)) {
-            return handleAndReturnSendObject(update, tgUser, "sendMessageCommand", SendMessageCommand.class, new AccessTokenDTO());
+            return handleAndReturnSendObjectSecured(update, tgUser, "sendMessageCommand", SendMessageCommand.class);
         }
 
         return null;
@@ -348,14 +348,13 @@ public class UpdateServiceImpl implements UpdateService {
         return command.getSendMessage();
     }
 
-    private <T> Object handleAndReturnSendObject(Update update,
-                                                 TelegramUser tgUser,
-                                                 String beanName,
-                                                 Class<? extends Command> clazz,
-                                                 AccessTokenDTO accessTokenDTO) {
+    private <T> Object handleAndReturnSendObjectSecured(Update update,
+                                                        TelegramUser tgUser,
+                                                        String beanName,
+                                                        Class<? extends Command> clazz) {
         command = context.getBean(beanName, clazz);
 
-        command.handle(update, tgUser, accessTokenDTO, SecurityState.OK);
+        command.handle(update, tgUser, new AccessTokenDTO(), SecurityState.OK);
 
         if (command.getSendObjects() != null && command.getSendObjects().length != 0) {
             return command.getSendObjects();
