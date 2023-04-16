@@ -37,11 +37,11 @@ public interface GatewayClient {
     @PutMapping("/api/v1/users/{id}/condition")
     void updateUserCondition(@PathVariable long id, @RequestBody AddUpdateUserConditionDTO updateConditionDTO, @RequestHeader String authorization);
 
-    @GetMapping("/api/v1/users/{id}/food/all")
+    @GetMapping("/api/v1/users/{id}/food")
     List<GetDailyAteFoodDTO> getAllDailyAteFoods(@PathVariable long id, @RequestHeader String authorization);
 
     @GetMapping("/api/v1/users/{id}/food")
-    GetDailyAteFoodDTO getDailyAteFoods(@PathVariable long id, @RequestParam String productName, @RequestHeader String authorization);
+    GetDailyAteFoodDTO getSpecifiedDailyAteFoods(@PathVariable long id, @RequestParam String productName, @RequestHeader String authorization);
 
     @PostMapping("/api/v1/users/{id}/food")
     void saveDailyAteFood(@PathVariable long id, @RequestBody AddDailyAteFoodDTO addDailyAteFoodDTO, @RequestHeader String authorization);

@@ -175,7 +175,7 @@ public class AddFoodCommand extends Command {
             GetDailyAteFoodDTO getDailyAteFoodDTO;
 
             try {
-                getDailyAteFoodDTO = gatewayClient.getDailyAteFoods(tgUser.getUserId(), name, accessTokenDTO.getAccessToken());
+                getDailyAteFoodDTO = gatewayClient.getSpecifiedDailyAteFoods(tgUser.getUserId(), name, accessTokenDTO.getAccessToken());
             }
             catch (RuntimeException e) {
                 sendMessage.setText(e.getMessage());
