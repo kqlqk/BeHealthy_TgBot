@@ -109,6 +109,10 @@ public class GetWorkoutPlanCommand extends Command {
         keyboardRows.add(keyboardRow);
 
         keyboardRow = new KeyboardRow();
+        keyboardRow.add("Change exercises");
+        keyboardRows.add(keyboardRow);
+
+        keyboardRow = new KeyboardRow();
         keyboardRow.add("Back ↩");
         keyboardRows.add(keyboardRow);
 
@@ -140,7 +144,7 @@ public class GetWorkoutPlanCommand extends Command {
             text.append(current.getNumberPerDay());
             text.append(". ");
             text.append(StringUtils.capitalize(current.getExercise().getName().toLowerCase()));
-            text.append("\n[");
+            text.append(current.getExercise().getAlternativeId() != null ? " | Supports change \n[" : "\n[");
             text.append(current.getRep());
             text.append(" reps X ");
             text.append(current.getSet());

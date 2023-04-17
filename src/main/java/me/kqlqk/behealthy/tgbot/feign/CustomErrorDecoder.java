@@ -59,7 +59,8 @@ public class CustomErrorDecoder implements ErrorDecoder {
                 errorMessage.matches("Fat fold between nipple and upper chest should be between 2 and 50") ||
                 errorMessage.matches("Fat fold between shoulder and elbow should be between 2 and 50") ||
                 errorMessage.matches("Name should be between 2 and 50 characters") ||
-                errorMessage.matches("Day should be between 1 and 7")) {
+                errorMessage.matches("Day should be between 1 and 7") ||
+                errorMessage.matches("Token expired")) {
             // ignore
         }
         else if (errorMessage.matches("Email cannot be null")) {
@@ -141,10 +142,10 @@ public class CustomErrorDecoder implements ErrorDecoder {
             errorMessage = "You can have from 1 to 5 workouts per week";
         }
         else if (errorMessage.matches("Exercise with name = [^ ]{1,50} not found")) {
-            errorMessage = "We haven't exercise with that name";
+            errorMessage = "We have not exercise with that name";
         }
         else if (errorMessage.matches("There are no alternative exercises for [^ ]{1,50}")) {
-            errorMessage = "We haven't alternative exercise for provided exercise";
+            errorMessage = "We have not alternative exercise for provided exercise";
         }
         else if (errorMessage.matches("User's workout hasn't exercise with name = [^ ]{1,50}")) {
             errorMessage = "Your workout plan hasn't that exercise";

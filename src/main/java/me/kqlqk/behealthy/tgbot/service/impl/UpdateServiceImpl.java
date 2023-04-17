@@ -87,18 +87,14 @@ public class UpdateServiceImpl implements UpdateService {
         Command c = new Command() {
         };
 
-        if (tgUser.getRefreshToken() != null) {
+        if (tgUser.isActive()) {
             ValidateDTO validateDTO;
             try {
                 validateDTO = gatewayClient.validateRefreshToken(new RefreshTokenDTO(tgUser.getRefreshToken()));
             }
             catch (RuntimeException e) {
-                log.error("Something went wrong", e);
-
-                SendMessage sendMessage = new SendMessage(chatId, e.getMessage());
-                sendMessage.setReplyMarkup(c.defaultKeyboard(tgUser.isActive()));
-
-                return sendMessage;
+                validateDTO = new ValidateDTO();
+                validateDTO.setValid(false);
             }
 
             if (!validateDTO.isValid()) {
@@ -117,20 +113,20 @@ public class UpdateServiceImpl implements UpdateService {
             return handleCallbackQuery(update, tgUser);
         }
 
-        if (update.getMessage().hasPhoto() && tgUser.getCommandSate() == CommandState.WAIT_FOR_PHOTO) {
-            return handleAndReturnSendObjectSecured(update, tgUser, "addPhotoCommand", AddPhotoCommand.class);
-        }
-
-        if (!update.getMessage().hasText()) {
-            return null;
-        }
-
         if (BackCommand.getNames().contains(update.getMessage().getText().toLowerCase())) {
             return handleAndReturnSendObject(update, tgUser, "backCommand", BackCommand.class);
         }
 
         if (!tgUser.isActive()) {
             return choosingForInactiveUsers(update, tgUser);
+        }
+
+        if (update.getMessage().hasPhoto() && tgUser.getCommandSate() == CommandState.WAIT_FOR_PHOTO) {
+            return handleAndReturnSendObjectSecured(update, tgUser, "addPhotoCommand", AddPhotoCommand.class);
+        }
+
+        if (!update.getMessage().hasText()) {
+            return null;
         }
 
         if (tgUser.getTelegramId() == 538822850) {
@@ -245,6 +241,10 @@ public class UpdateServiceImpl implements UpdateService {
             return handleAndReturnSendObjectSecured(update, tgUser, "setWorkoutPlanCommand", SetWorkoutPlanCommand.class);
         }
 
+        if (ChangeExerciseInWorkoutCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObjectSecured(update, tgUser, "changeExerciseInWorkoutCommand", ChangeExerciseInWorkoutCommand.class);
+        }
+
         if (GetUserWorkoutCommand.getNames().contains(userMessage)) {
             return handleAndReturnSendObjectSecured(update, tgUser, "getUserWorkoutCommand", GetUserWorkoutCommand.class);
         }
@@ -296,6 +296,9 @@ public class UpdateServiceImpl implements UpdateService {
 
             case SET_WORKOUT_WAIT_FOR_DATA:
                 return handleAndReturnSendObjectSecured(update, tgUser, "setWorkoutPlanCommand", SetWorkoutPlanCommand.class);
+
+            case CHANGE_EXERCISE_WAIT_FOR_DATA:
+                return handleAndReturnSendObjectSecured(update, tgUser, "changeExerciseInWorkoutCommand", ChangeExerciseInWorkoutCommand.class);
 
             case ADD_EXERCISE_WAIT_FOR_DATA:
                 return handleAndReturnSendObjectSecured(update, tgUser, "addExerciseToUserWorkoutCommand", AddExerciseToUserWorkoutCommand.class);
