@@ -33,7 +33,7 @@ public class LoginCommand extends Command {
 
     @Override
     public void handle(Update update, TelegramUser tgUser) {
-        sendMessage.setText(update.getMessage().getChatId().toString());
+        sendMessage.setChatId(update.getMessage().getChatId().toString());
         String userMessage = update.getMessage().getText();
 
         if (tgUser.getCommandSate() == CommandState.BASIC) {

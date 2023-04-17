@@ -96,9 +96,6 @@ public class AddExerciseToUserWorkoutCommand extends Command {
                 return;
             }
 
-            tgUser.setCommandSate(CommandState.BASIC);
-            telegramUserService.update(tgUser);
-
             getUserWorkoutCommand.handle(update, tgUser, accessTokenDTO, securityState);
 
             SendMessage sendMessage1 = new SendMessage(chatId, "Successfully");

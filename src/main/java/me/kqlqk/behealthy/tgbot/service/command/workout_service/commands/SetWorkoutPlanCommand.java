@@ -48,6 +48,8 @@ public class SetWorkoutPlanCommand extends Command {
         String chatId = update.getMessage().getChatId().toString();
         String userMessage = update.getMessage().getText();
 
+        sendMessage.setChatId(chatId);
+
         if (securityState == SecurityState.SHOULD_RELOGIN) {
             sendMessage.setText("Sorry, you should sign in again");
             sendMessage.setReplyMarkup(defaultKeyboard(false));
