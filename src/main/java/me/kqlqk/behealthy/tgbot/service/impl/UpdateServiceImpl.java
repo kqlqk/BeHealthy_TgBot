@@ -228,6 +228,10 @@ public class UpdateServiceImpl implements UpdateService {
             return handleAndReturnSendObjectSecured(update, tgUser, "loadOldPhotosCommand", LoadOldPhotosCommand.class);
         }
 
+        if (DeleteAllPhotosCommand.getNames().contains(userMessage)) {
+            return handleAndReturnSendObjectSecured(update, tgUser, "deleteAllPhotosCommand", DeleteAllPhotosCommand.class);
+        }
+
 
         if (WorkoutServiceMenu.getNames().contains(userMessage)) {
             return handleAndReturnSendObjectSecured(update, tgUser, "workoutServiceMenu", WorkoutServiceMenu.class);
@@ -308,6 +312,9 @@ public class UpdateServiceImpl implements UpdateService {
 
             case WAIT_FOR_PHOTO:
                 return handleAndReturnSendObjectSecured(update, tgUser, "addPhotoCommand", AddPhotoCommand.class);
+
+            case DELETE_ALL_PHOTOS_WAIT_FOD_CHOOSING:
+                return handleAndReturnSendObjectSecured(update, tgUser, "deleteAllPhotosCommand", DeleteAllPhotosCommand.class);
         }
 
         return null;

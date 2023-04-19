@@ -157,6 +157,10 @@ public class TrackChangesCommand extends Command {
         keyboardRows.add(keyboardRow);
 
         keyboardRow = new KeyboardRow();
+        keyboardRow.add("Delete all my photos");
+        keyboardRows.add(keyboardRow);
+
+        keyboardRow = new KeyboardRow();
         keyboardRow.add("Back ↩");
         keyboardRows.add(keyboardRow);
 

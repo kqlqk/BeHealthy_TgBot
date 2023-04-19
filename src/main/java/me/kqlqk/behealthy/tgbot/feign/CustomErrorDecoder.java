@@ -195,6 +195,9 @@ public class CustomErrorDecoder implements ErrorDecoder {
         else if (errorMessage.matches("UserPhoto with userId = [^ ]{1,50} and photoDate = [^ ]{1,50} already exists")) {
             errorMessage = "Photo already exists";
         }
+        else if (errorMessage.matches("Photo wasn't deleted, UserPhoto = [^ ]{1,100}")) {
+            errorMessage = "Photo wasn't deleted. Something went wrong";
+        }
         else {
             log.error("Unhandled exception: " + errorMessage);
             errorMessage = "Something went wrong";

@@ -99,4 +99,6 @@ public interface GatewayClient {
     @PostMapping("/api/v1/users/{id}/photo")
     void saveUserPhoto(@PathVariable long id, @RequestBody AddUserPhotoDTO addUserPhotoDTO, @RequestHeader String authorization);
 
+    @DeleteMapping("/api/v1/users/{id}/photo")
+    void deleteUserPhoto(@PathVariable long id, @RequestParam(required = false) String date, @RequestHeader String authorization);
 }
